@@ -1,6 +1,6 @@
 +++
 date = '2025-04-17T00:03:29+08:00'
-draft = true
+draft = false
 title = 'Variational Autoencoder'
 +++
 

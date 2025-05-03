@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
+<html lang="zh-cn">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     
@@ -11,12 +11,12 @@
     
     
     
-      <meta name="robots" content="index, follow">
+      <meta name="robots" content="noindex, nofollow">
     
     
 
     
-<link rel="stylesheet" href="/ananke/css/main.min.d05fb5f317fcf33b3a52936399bdf6f47dc776516e1692e412ec7d76f4a5faa2.css" >
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
 
 
 
@@ -37,13 +37,13 @@
     
 
     
-      <link rel="canonical" href="https://example.org/">
+      <link rel="canonical" href="http://localhost:1313/">
     
 
-    <meta property="og:url" content="https://example.org/">
+    <meta property="og:url" content="http://localhost:1313/">
   <meta property="og:site_name" content="Renjie Zou blog list">
   <meta property="og:title" content="Renjie Zou blog list">
-  <meta property="og:locale" content="en_us">
+  <meta property="og:locale" content="zh_cn">
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Renjie Zou blog list">
@@ -52,10 +52,33 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Renjie Zou blog list">
 
-      
-    
 	
-  </head><body class="ma0 avenir bg-near-white production">
+
+
+
+
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  window.MathJax  = {
+    tex: {
+        inlineMath: [['$', '$'], ['\$', '\$']], 
+        displayMath: [['$$', '$$']],
+        processEnvironments: true,
+        
+        packages: ['base', 'ams', 'noerrors', 'noundefined'],
+        tags: "ams",
+    },
+    loader:{
+        load: ['ui/safe', '[tex]/ams'], 
+    
+    },
+  };
+</script>
+
+<link rel="stylesheet" href="/css/custom.css">
+
+
+  </head><body class="ma0 avenir bg-near-white development">
 
     
 
@@ -120,8 +143,28 @@
             </a>
         </h1>
         <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <h2 id="introduction">Introduction</h2>
-<p>This is my first log, let&rsquo;s talk about Variational Autoencoder(VAE).</p>
+          <h2 id="生成模型的目标">生成模型的目标</h2>
+<p>生成模型（Generative Models）的目的是想学习真实数据分布 $p(x)$， 其中 $X$ 通常是定义在某个（高维）空间 $\mathcal{X}$ 上的数据点。比如一张图像就是一个高维数据点，每个像素对应一个维度。具体来讲生成模型想要解决的问题：<em><strong>考虑一个从真实分布 $p(x)$ 中采样得到的数据集 $ \lbrace{x_1, x_2, \dots, x_n \rbrace}$  ，我们希望从采样得到的数据子集中学习一个分布 $p_\theta(x)$ ，逼近真实分布 $p(x)$</strong></em>。</p>
+<h2 id="变分自编码器-variational-autoencoder">变分自编码器 Variational Autoencoder</h2>
+<p>变分自编码器（VAE）作为一种生成模型，依然在现在的机器学习算法占有一席之地。VAE的优化目标推导其实有好几种方式，在开始之前，我想先从最简单的例子开始。</p>
+<h3 id="简单假设下存在的问题">简单假设下存在的问题</h3>
+<p>考虑对人脸数据集CelebA的建模，我们希望从CelebA数据集中学习到分布 $p_\theta(x)$，然后从 $p_\theta(x)$ 中采样得到新的人脸样本。从流形假设（Manifold Hypothesis）的角度来讲，自然图像数据在高维像素空间中形成一个稠密子集，其内在结构可以用一个低维、非线性流形来近似建模；或者说，图像数据服从一个 <em><strong>嵌入在高维像素空间中低维非线性流形分布</strong></em> 。以CelebA为例，每张图像的数据维度为178x218x3维，RGB图像每一维有256种取值，这个一个非常庞大的高维空间，只有极少数组合才对应一张“真实的人脸”，实际上影响人脸的因素可以抽象为具体几类（比如表情，年龄，肤色，五官轮廓等等）。当然，具体抽象成哪些类别并不是我们关心的问题，我们关心的是高维（图像）数据 $x$ 到低维空间隐变量 $z$（latent variables）的映射关系，通过构建这对映射关系，我们能够实现从 $p(z)$ 中采样，生成新样本 $ \hat{x}$。其实深度学习中不少领域都与该流形假设有关，比如自编码器、表示学习、对抗样本等。</p>
+<p>基于上面的想法，一个很自然的想法浮现在脑海中：可以直接构建一个解码器（Decoder），从先验分布 $p(z)$ 中采样，作为Decoder的输入，生成样本并和真实分布中的数据求距离：
+</p>
+$$
+\begin{equation}
+\begin{aligned}
+p_{\theta}(X) &= \int p_{\theta}(X|z)p(z) dz \\
+     &= \int \mathcal{N}(X|f(z;\theta), \Sigma) \cdot \mathcal{N}(z|0, I) dz \\
+     &= \mathbb{E}_{z \sim p(z)} \left[ p_{\theta}(X|z) \right] \\
+     &\approx \frac{1}{m} \sum_{i=0}^{m} p_{\theta}(X|z_{i})
+\end{aligned}
+\end{equation}
+$$<p>
+其中，$f(z;\theta)$ 是隐变量 $z$ 到样本空间 $ X$ 的映射函数，在这里也就是Decoder，隐变量 $z$ 通常假设为服从均值为 $0$，协方差矩阵为单元矩阵 $I$ 的高斯分布 $\mathcal{N}(z|0, I) $；Decoder生成的样本分布 $p_{\theta}(X|z)$ 的均值，协方差矩阵 $\Sigma$ 一般设为常数。容易发现，我们利用蒙特卡洛采样（Monte Carlo Sampling）从 $p(z)$ 中采样，经过Decoder就可以生成新的样本了，然后计算损失，反向传播优化Decoder了。
+<figure><img src="/pic_vae/dec.png" width="1600">
+</figure>
+</p>
         </div>
         <a href="/posts/variational-autoencoder/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
       </div>
@@ -141,7 +184,7 @@
     </main>
     <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
   <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://example.org/" >
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
     &copy;  Renjie Zou blog list 2025 
   </a>
     <div><div class="ananke-socials"></div>

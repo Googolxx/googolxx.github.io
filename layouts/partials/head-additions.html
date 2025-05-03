@@ -1,0 +1,68 @@
+<!-- {{ if or .Params.math .Site.Params.math }}
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\$', '\$']], // 支持 $...$ 和 $...$
+            displayMath: [['$$', '$$'], ['\$', '\$']], // 支持 $$...$$ 和 $...$
+            processEscapes: true, // 允许在文本中使用转义字符如 \$ 来避免被解析为数学分隔符
+            processEnvironments: true,
+            packages: {'[+]': ['noerrors']}
+        },
+        options: {
+            skipHtmlTags: {'[-]': ['script', 'noscript', 'style', 'textarea', 'pre', 'code']},
+            renderActions: {
+                find: [10, function (doc) {
+                    for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                        const display = !!node.type.match(/; *mode=display/);
+                        const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                        const text = document.createTextNode('');
+                        node.parentNode.replaceChild(text, node);
+                        math.start = {node: text, delim: '', n: 0};
+                        math.end = {node: text, delim: '', n: 0};
+                        doc.math.push(math);
+                    }
+                }, '']
+            }
+        }
+    };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{{ end }} -->
+
+<!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  window.MathJax  = {
+    tex: {
+        inlineMath: [['$', '$'], ['\$', '\$']], 
+        displayMath: [['$$', '$$']],
+        processEnvironments: true,
+        packages: {'[+]': ['noerrors']}
+        
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script> -->
+
+
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  window.MathJax  = {
+    tex: {
+        inlineMath: [['$', '$'], ['\$', '\$']], 
+        displayMath: [['$$', '$$']],
+        processEnvironments: true,
+        // packages: {'[+]': ['noerrors', 'ams']}
+        packages: ['base', 'ams', 'noerrors', 'noundefined'],
+        tags: "ams",
+    },
+    loader:{
+        load: ['ui/safe', '[tex]/ams'], 
+    // load: ['[tex]/noerrors']
+    },
+  };
+</script>
+
+<link rel="stylesheet" href="/css/custom.css">
+

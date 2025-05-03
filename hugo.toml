@@ -1,7 +1,21 @@
 baseURL = 'https://example.org/'
-languageCode = 'en-us'
+languageCode = 'zh-cn'
 title = 'Renjie Zou blog list'
 theme = 'ananke'
+
+
+[params]
+  math = true
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[', '\]'], ['$$', '$$']]
+          inline = [['\(', '\)']]
+
 
 [caches]
   [caches.images]

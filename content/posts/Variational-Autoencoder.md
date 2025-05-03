@@ -52,6 +52,7 @@ $$
 
 ### 正文
 如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -60,9 +61,11 @@ p_{\theta}(x) &= \frac{p_{\theta}(X, z)}{p(z|X)} \\
 \end{aligned}
 \end{equation}
 $$
+
 (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 
 于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -78,6 +81,7 @@ $$
 $$
 
 因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为**变分下界或证据下界（variational lower bound, or evidence lower bound）** ：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -87,6 +91,7 @@ $$
 $$
 
 不难发现，最大化变分下界 等价于最大化 $p_{\theta}(x)$ 并最小化 $D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$，这2个目标都恰恰是我们希望优化的。那么来计算下该变分下界的解析解：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -97,6 +102,7 @@ $$
 $$
 
 完美，第一项的解析解在前面我们已经算过了，通过MC采样我们可以近似求出其解析解，区别在于隐变量 $z$ 之前是从 $p(z) \sim \mathcal{N}(z|0, I) $ 中采样，而现在是从 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 中采样；而第二项中，2个高斯分布间的KL散度也可以直接算出来解析解：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -107,6 +113,7 @@ D_{\text{KL}}\left(\mathcal{N}(\mu_0, \Sigma_0) \parallel \mathcal{N}(\mu_1, \Si
 $$
 
 最后一步，让我们来计算优化目标最后的解析解。第一项，我们假设 $p_{\theta}(X|z)$ 的协方差为全为 $\frac{1}{2}$ 的对角矩阵；第二项，设隐变量 $z$ 维度为 $d$带入上述KL散度的解析解。优化目标的最终形式可以表示为：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -125,6 +132,7 @@ $$
 可以发现，无论是第一项的重建损失项还是第二项拟合真实后验分布的 $q_{\phi}(z|X)$ 和先验分布 $p(z)$ 间的KL散度，都是正常收敛的状态。可视化的结果也还不错，至少比较多样，不会崩塌到“平均脸”。但还有一个问题值得注意，因为我们优化的是变分下界，$D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$ 这一项可能会引入一些误差，但这个误差项又很难直观表现出来，这也是很多后续工作优化/讨论的地方。
 
 其实关于VAE，还有很多值得讨论研究的点。比如最终优化目标的重建损失和KL散度，其实KL散度更像是正则项，重建损失和KL散度之间构成一个trade-off关系：更具体地来说，我们虽然会假设 $p_{\theta}(X|z)$ 的协方差矩阵为常数，但实际采样过程中，并不会再加一个高斯噪声来模拟，而是直接取均值，那如果这里对协方差矩阵的假设为一个与可控常数 $ \beta$ 相关的对角矩阵，最终优化目标可以（不严谨地）等价为以下形式：
+
 $$
 \begin{equation}
 \begin{aligned}
@@ -132,6 +140,7 @@ $$
 \end{aligned}
 \end{equation}
 $$
+
 那就等价于Beta-VAE了，当然Beta-VAE的出发点不同，是将等式重写为KKT条件下的拉格朗日形式。
 
 VAE还有很多有意思的点，待后续学习&更新吧。

@@ -1,4 +1,4 @@
-baseURL = 'baseURL = "https://googolxx.github.io/Renjie/"'
+baseURL = 'https://googolxx.github.io/Renjie/'
 languageCode = 'zh-cn'
 title = 'Renjie Zou blog list'
 theme = 'ananke'

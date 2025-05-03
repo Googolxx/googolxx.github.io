@@ -31,7 +31,7 @@ $$
 \end{equation}
 $$
 
-因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为**变分下界或证据下界（variational lower bound, or evidence lower bound）** ：
+因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为**变分下界或证据下界（variational lower bound, or evidence lower bound）** 。
 $$
 \begin{equation}
 \begin{aligned}
@@ -40,7 +40,7 @@ $$
 \end{equation}
 $$
 
-不难发现，最大化变分下界 等价于最大化 $p_{\theta}(x)$ 并最小化 $D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$，这2个目标都恰恰是我们希望优化的。那么来计算下该变分下界的解析解：
+不难发现，最大化变分下界 等价于最大化 $p_{\theta}(x)$ 并最小化 $D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$，这2个目标都恰恰是我们希望优化的。那么来计算下该变分下界的解析解。
 $$
 \begin{equation}
 \begin{aligned}
@@ -50,7 +50,7 @@ $$
 \end{equation}
 $$
 
-完美，第一项的解析解在前面我们已经算过了，通过MC采样我们可以近似求出其解析解，区别在于隐变量 $z$ 之前是从 $p(z) \sim \mathcal{N}(z|0, I) $ 中采样，而现在是从 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 中采样；而第二项中，2个高斯分布间的KL散度也可以直接算出来解析解：
+完美，第一项的解析解在前面我们已经算过了，通过MC采样我们可以近似求出其解析解，区别在于隐变量 $z$ 之前是从 $p(z) \sim \mathcal{N}(z|0, I) $ 中采样，而现在是从 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 中采样；而第二项中，2个高斯分布间的KL散度也可以直接算出来解析解。
 $$
 \begin{equation}
 \begin{aligned}
@@ -60,7 +60,7 @@ D_{\text{KL}}\left(\mathcal{N}(\mu_0, \Sigma_0) \parallel \mathcal{N}(\mu_1, \Si
 \end{equation}
 $$
 
-最后一步，让我们来计算优化目标最后的解析解。第一项，我们假设 $p_{\theta}(X|z)$ 的协方差为全为 $\frac{1}{2}$ 的对角矩阵；第二项，设隐变量 $z$ 维度为 $d$带入上述KL散度的解析解。优化目标的最终形式可以表示为：
+最后一步，让我们来计算优化目标最后的解析解。第一项，我们假设 $p_{\theta}(X|z)$ 的协方差为全为 $\frac{1}{2}$ 的对角矩阵；第二项，设隐变量 $z$ 维度为 $d$带入上述KL散度的解析解。优化目标的最终形式可以表示为。
 $$
 \begin{equation}
 \begin{aligned}

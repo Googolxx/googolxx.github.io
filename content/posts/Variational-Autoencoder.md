@@ -113,9 +113,9 @@ $$
 \end{equation}
 $$
 好，得到目标损失函数了，可以训练VAE模型看看效果了，注意这里还是只对 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 采样一次，因为我们引入Encoder构建约束关系后，采样出来的隐变量 $z$ 大部分都是有意义的，所以也不太担心会严重的模式坍塌现象了。类似的，在CelebA上，我训练了一个VAE模型，以下是损失曲线和生成图像的可视化结果：
-{{< figure src="/pic_vae/vae_mse.png" title="" width="1600" >}}
-{{< figure src="/pic_vae/vae_kld.png" title="" width="1600" >}}
-{{< figure src="/pic_vae/vae_recons.png" title="" width="1600" >}}
+{{< figure src="/pic_vae/vae_mse.png" title="">}}
+{{< figure src="/pic_vae/vae_kld.png" title="">}}
+{{< figure src="/pic_vae/vae_recons.png" title="">}}
 
 可以发现，无论是第一项的重建损失项还是第二项拟合真实后验分布的 $q_{\phi}(z|X)$ 和先验分布 $p(z)$ 间的KL散度，都是正常收敛的状态。可视化的结果也还不错，至少比较多样，不会崩塌到“平均脸”。但还有一个问题值得注意，因为我们优化的是变分下界，$D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$ 这一项可能会引入一些误差，但这个误差项又很难直观表现出来，这也是很多后续工作优化/讨论的地方。
 
@@ -138,5 +138,7 @@ p(X) &= \int p(X|z; \theta)p(z) dz \\
 \end{aligned}
 $$ -->
 
+<!-- baseURL = 'https://googolxx.github.io/Renjie/' -->
+<!-- baseURL = 'https://example.org/' -->
 
 <!-- This is my first log, let's talk about Variational Autoencoder(VAE). -->

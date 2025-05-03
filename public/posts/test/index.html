@@ -7,7 +7,7 @@
     <title>Test | Renjie Zou blog list</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="正文
-如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题：
+(注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 
 $$
 \begin{equation}
@@ -65,7 +65,7 @@ $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{
     <meta property="og:url" content="https://googolxx.github.io/posts/test/">
   <meta property="og:site_name" content="Renjie Zou blog list">
   <meta property="og:title" content="Test">
-  <meta property="og:description" content="正文 如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题： $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
+  <meta property="og:description" content="正文 (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。 $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数： $$ \begin{equation} \begin{aligned} \log p_{\theta}(X) &amp;= \log p_{\theta}(X) \int q_{\phi}(z|X) dz \\ &amp;= \int q_{\phi}(z|X) \log p_{\theta}(X) dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{p(z|X)} \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \cdot \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} dz &#43; \int q_{\phi}(z|X) \log \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] &#43; D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) \\ &amp;\geq \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] \end{aligned} \end{equation} $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) | p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为变分下界或证据下界（variational lower bound, or evidence lower bound） ：">
   <meta property="og:locale" content="zh_cn">
   <meta property="og:type" content="article">
@@ -74,14 +74,14 @@ $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{
     <meta property="article:modified_time" content="2025-05-04T00:27:21+08:00">
 
   <meta itemprop="name" content="Test">
-  <meta itemprop="description" content="正文 如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题： $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
+  <meta itemprop="description" content="正文 (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。 $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数： $$ \begin{equation} \begin{aligned} \log p_{\theta}(X) &amp;= \log p_{\theta}(X) \int q_{\phi}(z|X) dz \\ &amp;= \int q_{\phi}(z|X) \log p_{\theta}(X) dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{p(z|X)} \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \cdot \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} dz &#43; \int q_{\phi}(z|X) \log \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] &#43; D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) \\ &amp;\geq \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] \end{aligned} \end{equation} $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) | p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为变分下界或证据下界（variational lower bound, or evidence lower bound） ：">
   <meta itemprop="datePublished" content="2025-05-04T00:27:21+08:00">
   <meta itemprop="dateModified" content="2025-05-04T00:27:21+08:00">
-  <meta itemprop="wordCount" content="316">
+  <meta itemprop="wordCount" content="330">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Test">
-  <meta name="twitter:description" content="正文 如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题： $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
+  <meta name="twitter:description" content="正文 (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。 $$ \begin{equation} \begin{aligned} p_{\theta}(x) &amp;= \frac{p_{\theta}(X, z)}{p(z|X)} \\ &amp;= \frac{P_{\theta}(X|z)p(z)}{p(z|X)} \end{aligned} \end{equation} $$ (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数： $$ \begin{equation} \begin{aligned} \log p_{\theta}(X) &amp;= \log p_{\theta}(X) \int q_{\phi}(z|X) dz \\ &amp;= \int q_{\phi}(z|X) \log p_{\theta}(X) dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{p(z|X)} \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \cdot \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \int q_{\phi}(z|X) \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} dz &#43; \int q_{\phi}(z|X) \log \frac{q_{\phi}(z|X)}{p(z|X)} dz \\ &amp;= \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] &#43; D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) \\ &amp;\geq \mathbb{E}_{q_{\phi}(z|X)} \left[ \log \frac{p_{\theta}(X,z)}{q_{\phi}(z|X)} \right] \end{aligned} \end{equation} $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) | p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为变分下界或证据下界（variational lower bound, or evidence lower bound） ：">
 
       
@@ -163,7 +163,7 @@ $$因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{
       
     </header>
     <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="正文">正文</h3>
-<p>如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题：
+<p>(注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 </p>
 $$
 \begin{equation}

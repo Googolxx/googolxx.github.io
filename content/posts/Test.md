@@ -5,7 +5,7 @@ title = 'Test'
 +++
 
 ### 正文
-如果我们能够知道真实的后验分布 $p(z|X)$，似乎就能解决这个问题：
+(注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 $$
 \begin{equation}
 \begin{aligned}

@@ -5,7 +5,7 @@ title = 'Test'
 +++
 
 ### 正文
-(注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
+注意这里可能会有歧义，
 $$
 \begin{equation}
 \begin{aligned}
@@ -16,11 +16,35 @@ p_{\theta}(x) &= \frac{p_{\theta}(X, z)}{p(z|X)} \\
 $$
 (注意这里可能会有歧义，我用 $p(z|X)$替代了 $p_{\theta}(z|X)$，但最后都会优化掉)。因为 $ p(z) \sim \mathcal{N}(z|0, I) $，而 $p_{\theta}(X|z)$ 就是Decoder所生成的分布，如果知道真实后验分布 $p(z|x)$，那我们也可以直接优化目标函数。但核心 $p(z|x)$ 是untracble的 （当然更严谨一点讲，也可以用hybird MC等方式来逼近，但就不在这里的讨论范畴了）。
 
-于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数：
+于是在VAE中，我们可以用变分贝叶斯，引入一个Encoder，生成 $ q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I)$ 来逼近真实后验分布 $p(z|X)$ （类似地，这里协方差矩阵也为对角矩阵）。重新推导目标函数
 
+$$
+\begin{equation}
+\begin{aligned}
+\log p_{\theta}(X) &\approx \frac{1}{m} \sum_{i=0}^{m} p_{\theta}(X|z_{i}) \\
+    &= \frac{1}{m} \sum_{i=0}^{m} \log \left( \frac{1}{(2\pi)^{K/2} |\Sigma|^{1/2}} \exp\left(-\frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i))\right) \right) \\
+    &= \frac{1}{m} \sum_{i=0}^{m} \left[ -\frac{K}{2} \log(2\pi) - \frac{1}{2} \log |\Sigma| - \frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i)) \right] \\
+    &\propto \frac{1}{m} \sum_{i=0}^{m} - \frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i)) \\ 
+    &\propto \frac{1}{m} \sum_{i=0}^{m} \sum_{k=0}^{K} \frac{\left( x^{(k)} - f(z_i;\theta)^{(k)} \right)^{2}}{\sigma^{(k)}} \\
+    &\propto \frac{1}{m} \sum_{i=0}^{m} \sum_{k=0}^{K} \left( x^{(k)} - f(z_i;\theta)^{(k)} \right)^{2}
+\end{aligned}
+\end{equation}
+$$
 
-因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为**变分下界或证据下界（variational lower bound, or evidence lower bound）** 。
+因为真实后验分布 $p(z|X)$ 没有解析解，且KL散度这一项 $ D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X)) $ 始终是大于0的，因此目标优化函数可以改为最大化 第一项。在变分贝叶斯方法中，这个损失函数被称为**变分下界或证据下界（variational lower bound, or evidence lower bound）** 
 
+$$
+\begin{equation}
+\begin{aligned}
+\log p_{\theta}(X) &\approx \frac{1}{m} \sum_{i=0}^{m} p_{\theta}(X|z_{i}) \\
+    &= \frac{1}{m} \sum_{i=0}^{m} \log \left( \frac{1}{(2\pi)^{K/2} |\Sigma|^{1/2}} \exp\left(-\frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i))\right) \right) \\
+    &= \frac{1}{m} \sum_{i=0}^{m} \left[ -\frac{K}{2} \log(2\pi) - \frac{1}{2} \log |\Sigma| - \frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i)) \right] \\
+    &\propto \frac{1}{m} \sum_{i=0}^{m} - \frac{1}{2} (X - f(z_i))^T \Sigma^{-1} (X - f(z_i)) \\ 
+    &\propto \frac{1}{m} \sum_{i=0}^{m} \sum_{k=0}^{K} \frac{\left( x^{(k)} - f(z_i;\theta)^{(k)} \right)^{2}}{\sigma^{(k)}} \\
+    &\propto \frac{1}{m} \sum_{i=0}^{m} \sum_{k=0}^{K} \left( x^{(k)} - f(z_i;\theta)^{(k)} \right)^{2}
+\end{aligned}
+\end{equation}
+$$
 
 不难发现，最大化变分下界 等价于最大化 $p_{\theta}(x)$ 并最小化 $D_{\text{KL}}(q_{\phi}(z|X) \| p(z|X))$，这2个目标都恰恰是我们希望优化的。那么来计算下该变分下界的解析解。
 

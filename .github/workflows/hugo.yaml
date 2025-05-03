@@ -73,7 +73,6 @@ jobs:
       - name: Cache Save
         id: cache-save
         uses: actions/cache/save@v4
-        continue-on-error: true 
         with:
           path: |
             ${{ runner.temp }}/hugo_cache

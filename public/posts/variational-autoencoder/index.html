@@ -181,7 +181,7 @@ p_{\theta}(X) &= \int p_{\theta}(X|z)p(z) dz \\
 \end{equation}
 $$<p>
 其中，$f(z;\theta)$ 是隐变量 $z$ 到样本空间 $ X$ 的映射函数，在这里也就是Decoder，隐变量 $z$ 通常假设为服从均值为 $0$，协方差矩阵为单元矩阵 $I$ 的高斯分布 $\mathcal{N}(z|0, I) $；Decoder生成的样本分布 $p_{\theta}(X|z)$ 的均值，协方差矩阵 $\Sigma$ 一般设为常数。容易发现，我们利用蒙特卡洛采样（Monte Carlo Sampling）从 $p(z)$ 中采样，经过Decoder就可以生成新的样本了，然后计算损失，反向传播优化Decoder了。
-<figure><img src="/pic_vae/dec.png" width="1600">
+<figure><img src="/Renjie/pic_vae/dec.png" width="1600">
 </figure>
 </p>
 <p>在实际应用中，我们往往只会从 $p(z)$ 中采样一次（在这里，只采样一次其实是有问题的，因为没有构建约束关系，采样出来的大部分 $z$ 都是没有意义的），来计算下目标函数，我们希望最大化 $p_{\theta}(X)$，为了方便计算会取 $log$，也就是最大化 $ log p_{\theta}(X) $ ，设 $ X$ 的维度为 $ K$ ：

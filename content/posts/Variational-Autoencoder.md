@@ -113,7 +113,7 @@ $$
 \end{equation}
 $$
 好，得到目标损失函数了，可以训练VAE模型看看效果了，注意这里还是只对 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 采样一次，因为我们引入Encoder构建约束关系后，采样出来的隐变量 $z$ 大部分都是有意义的，所以也不太担心会严重的模式坍塌现象了。类似的，在CelebA上，我训练了一个VAE模型，以下是损失曲线和生成图像的可视化结果：
-{{< figure src="/Renjie/pic_vae/vae_kld.mse" title="">}}
+{{< figure src="/Renjie/pic_vae/vae_mse.png" title="">}}
 {{< figure src="pic_vae/vae_kld.png" title="">}}
 {{< figure src="./pic_vae/vae_recons.png" title="">}}
 

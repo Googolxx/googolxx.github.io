@@ -26,7 +26,7 @@ p_{\theta}(X) &= \int p_{\theta}(X|z)p(z) dz \\
 \end{equation}
 $$
 其中，$f(z;\theta)$ 是隐变量 $z$ 到样本空间 $ X$ 的映射函数，在这里也就是Decoder，隐变量 $z$ 通常假设为服从均值为 $0$，协方差矩阵为单元矩阵 $I$ 的高斯分布 $\mathcal{N}(z|0, I) $；Decoder生成的样本分布 $p_{\theta}(X|z)$ 的均值，协方差矩阵 $\Sigma$ 一般设为常数。容易发现，我们利用蒙特卡洛采样（Monte Carlo Sampling）从 $p(z)$ 中采样，经过Decoder就可以生成新的样本了，然后计算损失，反向传播优化Decoder了。
-{{< figure src="/pic_vae/dec.png" title="" width="1600" >}}
+{{< figure src="/pic_vae/dec.png"  title="" width="1600" >}}
 
 
 在实际应用中，我们往往只会从 $p(z)$ 中采样一次（在这里，只采样一次其实是有问题的，因为没有构建约束关系，采样出来的大部分 $z$ 都是没有意义的），来计算下目标函数，我们希望最大化 $p_{\theta}(X)$，为了方便计算会取 $log$，也就是最大化 $ log p_{\theta}(X) $ ，设 $ X$ 的维度为 $ K$ ：
@@ -113,7 +113,7 @@ $$
 \end{equation}
 $$
 好，得到目标损失函数了，可以训练VAE模型看看效果了，注意这里还是只对 $q_{\phi}(z|X) \sim \mathcal{N}(z|\mu(X;\phi), \sigma(X;\phi)I) $ 采样一次，因为我们引入Encoder构建约束关系后，采样出来的隐变量 $z$ 大部分都是有意义的，所以也不太担心会严重的模式坍塌现象了。类似的，在CelebA上，我训练了一个VAE模型，以下是损失曲线和生成图像的可视化结果：
-{{< figure src="/pic_vae/vae_mse.png" title="">}}
+{{< figure src="/pic_vae/vae_kld.mse" title="">}}
 {{< figure src="/pic_vae/vae_kld.png" title="">}}
 {{< figure src="/pic_vae/vae_recons.png" title="">}}
 

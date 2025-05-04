@@ -32,8 +32,8 @@ $$
 
 
 在实际应用中，我们往往只会从 $p(z)$ 中采样一次（在这里，只采样一次其实是有问题的，因为没有构建约束关系，采样出来的大部分 $z$ 都是没有意义的），来计算下目标函数，我们希望最大化 $p_{\theta}(X)$，为了方便计算会取 $log$，也就是最大化 $ log p_{\theta}(X) $ ，设 $ X$ 的维度为 $ K$ ：
-$$
 
+$$
 \begin{equation}
 \begin{aligned}
 \log p_{\theta}(X) &\approx \frac{1}{m} \sum_{i=0}^{m} p_{\theta}(X|z_{i}) \\

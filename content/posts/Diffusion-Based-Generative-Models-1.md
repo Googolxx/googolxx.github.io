@@ -1,6 +1,6 @@
 +++
 date = '2025-06-22T13:43:59+08:00'
-draft = true
+draft = false
 title = 'Diffusion-Based Generative Models <1>: DDPM'
 tags = ["diffusion-models", "deep-learning", "generative-AI"]
 categories = ["Generative Models"]
@@ -244,6 +244,8 @@ $$
 $$
 
 以上就是推导consistency term得到的最终优化目标了：两个均值向量之间的欧氏距离平方。实际上经过简单的变换，上述目标可以变为更简洁的形式，但在此之前，让我们看看重建项的解析形式：
+
+
 
 <!-- $$
 \begin{aligned}

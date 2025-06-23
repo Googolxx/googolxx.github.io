@@ -1,0 +1,37 @@
+/* p {
+    text-indent: 2em;
+  } */
+
+  /* article.flex-l {
+    max-width: 120rem !important;
+  }
+   */
+  /* 让内容区占满容器 */
+  /* .w-two-thirds-l {
+    width: 100% !important;
+    padding-right: 0;
+  }
+   */
+  /* 可选：调整代码块最大宽度 */
+  /* .post-content pre {
+    max-width: 100%;
+  } */
+
+  /* 在 assets/css/custom.css 中添加 */
+  article.flex-l {
+    max-width: 80rem !important; /* 1280px（比原mw8更宽但仍有限制） */
+    width: 92%;
+    padding-left: 5rem;
+    /* margin: 0 auto; */
+  }
+  
+  /* 内容区调整 */
+  .w-two-thirds-l {
+    width: 72% !important; /* 原66% → 72% */
+    /* padding-right: 3rem; */
+  }
+  
+  /* 侧边栏（如有） */
+  aside {
+    width: 28%;
+  }

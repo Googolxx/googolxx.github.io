@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Renjie&#39;s log</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="">
+    <meta name="generator" content="Hugo 0.146.5">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+  
+
+
+    
+
+
+    
+      
+
+    
+
+    
+    
+      <link href="/tags/generative-ai/index.xml" rel="alternate" type="application/rss+xml" title="Renjie&#39;s log" />
+      <link href="/tags/generative-ai/index.xml" rel="feed" type="application/rss+xml" title="Renjie&#39;s log" />
+      
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/tags/generative-ai/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/tags/generative-ai/">
+  <meta property="og:site_name" content="Renjie&#39;s log">
+  <meta property="og:title" content="Generative-AI">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="og:type" content="website">
+
+  <meta itemprop="name" content="Generative-AI">
+  <meta itemprop="datePublished" content="2025-06-22T13:43:59+08:00">
+  <meta itemprop="dateModified" content="2025-06-22T13:43:59+08:00">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Generative-AI">
+
+	
+
+
+
+
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  window.MathJax  = {
+    tex: {
+        inlineMath: [['$', '$'], ['\$', '\$']], 
+        displayMath: [['$$', '$$']],
+        processEnvironments: true,
+        
+        packages: ['base', 'ams', 'noerrors', 'noundefined'],
+        tags: "ams",
+    },
+    loader:{
+        load: ['ui/safe', '[tex]/ams'], 
+    
+    },
+  };
+</script>
+
+<link rel="stylesheet" href="/css/custom.css">
+
+
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+
+  <header>
+    <div class="pb3-m pb6-l bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        Renjie&#39;s log
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv3 ph3 ph4-ns">
+        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
+          Generative-AI
+        </h1>
+        
+      </div>
+    </div>
+  </header>
+
+
+    <main class="pb7" role="main">
+      
+  <article class="cf pa3 pa4-m pa4-l">
+    <div class="measure-wide-l center f4 lh-copy nested-copy-line-height nested-links mid-gray">
+      <p>Below you will find pages that utilize the taxonomy term “Generative-AI”</p>
+    </div>
+  </article>
+  <div class="mw8 center">
+    <section class="flex-ns mt5 flex-wrap justify-around">
+      
+        <div class="w-100 mb4 relative bg-white">
+            <div class="mb3 pa4 mid-gray overflow-hidden">
+    
+      <div class="f6">
+        June 22, 2025
+      </div>
+    
+    <h1 class="f3 near-black">
+      <a href="/posts/diffusion-based-generative-models-1/" class="link black dim">
+        Diffusion-Based Generative Models &lt;1&gt;: DDPM
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <!-- summary = "深入解读去噪扩散概率模型 (DDPM) 的核心算法与数学推导，揭示其如何通过前向加噪与反向去噪过程实现高质量生成。" -->
+<h2 id="一引言">一、引言</h2>
+<p>扩散模型（<strong>Diffusion Models</strong>）作为当前生成式 AI 的核心范式，受热力学启发<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 <strong>DDPM</strong> <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> (Denoising Diffusion Probabilistic Models)。</p>
+<p>随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。</p>
+<h2 id="二ddpm-算法框架">二、DDPM 算法框架</h2>
+<h3 id="1-前向扩散过程forward-diffusion-process">1. 前向扩散过程（Forward Diffusion Process）</h3>
+<!-- 前向扩散过程是***无参***的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备“无记忆性 ”，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+
+具体来说，从一个真实数据分布采样 $\mathbf{x}_0 \sim q(\mathbf{x})$, 通过逐步对数据 $x_0$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $ x_1,...x_t,...x_T $，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
+
+
+$$
+\begin{aligned}
+x_t &= \sqrt{\alpha_t} x_{t-1} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
+    &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
+    % &= \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
+    &= \sqrt{\alpha_{t-1} \alpha_t } x_{t-2} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
+    &= \sqrt{\alpha_{t-1} \alpha_t} x_{t-2} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
+    &=  ... \\
+    &= \sqrt{\bar{\alpha_t}} x_0 +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
+\end{aligned}
+$$
+
+其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度， 定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
+
+$$
+\begin{aligned}
+q(x_t|x_{t-1}) &\sim \mathcal{N}(x_t | \sqrt{{\alpha_t}} x_{t-1}, (1 - \alpha_t) I) \\
+q(x_t|x_0) &\sim \mathcal{N}(x_t | \sqrt{\bar{\alpha_t}} x_0, (1 - \bar{\alpha_t}) I)
+\end{aligned}
+$$
+
+当扩散过程足够长，可以得到预先假设的先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$
+
+Note：
+- 加噪过程中设置系数为 $ \sqrt{\alpha_t} 和 (1 - \sqrt{\alpha_t}) $ 是使其平方和为 $1$, 从而保持扩散过程中方差的稳定。在 SMLD 中, 因为系数设置的不同, 为方差膨胀的形式。
+- 逆向分布 $q(x_{t-1}|x_{t})$ 没有显式解析解，因为 $ x_{t-1} 和 \epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $ 1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(x_{t-1}|x_{t})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。
+
+
+### 2. 逆向扩散过程（Reverse Diffusion Process）
+前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(x_{t-1}|x_{t})$ 的形式，那就能够根据联合分布 $ q(x_0, x_1,..., x_T)$ ，从先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$ 开始，逐步采样得到 $x_0$ 。上文提到 $q(x_{t-1}|x_{t})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(x_{t-1}|x_t)$ 来逼近 $q(x_{t-1}|x_{t})$ :
+
+$$
+p_\theta(x_{t-1}|x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t,t), \Sigma_\theta(x_t,t))
+$$
+
+完成训练后得到近似真实逆向分布的 $p_{\theta}(x_{t-1}|x_t)$，即可通过联合分布来进行采样：
+
+$$
+p_{\theta}(x_0,x_1,...,x_T) = p(x_T) \prod_{t=1}^{T} p_{\theta}(x_{t-1}|x_t)
+$$
+
+定义了前向和逆向的扩散过程，下一步就是确定优化目标，也就是损失函数。 -->
+<p>前向扩散过程是<em><strong>无参</strong></em>的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。</p>
+    </div>
+  <a href="/posts/diffusion-based-generative-models-1/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+
+        </div>
+      
+    </section>
+  </div>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  Renjie's log 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

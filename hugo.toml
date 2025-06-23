@@ -1,13 +1,13 @@
 baseURL = "https://googolxx.github.io/"
 languageCode = 'zh-cn'
-title = 'Renjie Zou blog list'
+title = "Renjie's log"
 theme = 'ananke'
 
 
 
 [params]
   math = true
-
+  custom_css = ["custom.css"]
 [markup]
   [markup.goldmark]
     [markup.goldmark.extensions]
@@ -16,7 +16,9 @@ theme = 'ananke'
         [markup.goldmark.extensions.passthrough.delimiters]
           block = [['\[', '\]'], ['$$', '$$']]
           inline = [['\(', '\)']]
-
+          
+[markup.goldmark.renderer]
+unsafe = true
 
 [caches]
   [caches.images]

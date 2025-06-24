@@ -21,53 +21,6 @@ mermaid = true
 ## 二、DDPM 算法框架
 
 ### 1. 前向扩散过程（Forward Diffusion Process）
-<!-- 前向扩散过程是***无参***的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备“无记忆性 ”，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
-
-具体来说，从一个真实数据分布采样 $\mathbf{x}_0 \sim q(\mathbf{x})$, 通过逐步对数据 $x_0$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $ x_1,...x_t,...x_T $，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
-
-
-$$
-\begin{aligned}
-x_t &= \sqrt{\alpha_t} x_{t-1} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    % &= \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t } x_{t-2} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t} x_{t-2} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
-    &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} x_0 +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
-\end{aligned}
-$$
-
-其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度， 定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
-
-$$
-\begin{aligned}
-q(x_t|x_{t-1}) &\sim \mathcal{N}(x_t | \sqrt{{\alpha_t}} x_{t-1}, (1 - \alpha_t) I) \\
-q(x_t|x_0) &\sim \mathcal{N}(x_t | \sqrt{\bar{\alpha_t}} x_0, (1 - \bar{\alpha_t}) I)
-\end{aligned}
-$$
-
-当扩散过程足够长，可以得到预先假设的先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$
-
-Note：
-- 加噪过程中设置系数为 $ \sqrt{\alpha_t} 和 (1 - \sqrt{\alpha_t}) $ 是使其平方和为 $1$, 从而保持扩散过程中方差的稳定。在 SMLD 中, 因为系数设置的不同, 为方差膨胀的形式。
-- 逆向分布 $q(x_{t-1}|x_{t})$ 没有显式解析解，因为 $ x_{t-1} 和 \epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $ 1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(x_{t-1}|x_{t})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。
-
-
-### 2. 逆向扩散过程（Reverse Diffusion Process）
-前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(x_{t-1}|x_{t})$ 的形式，那就能够根据联合分布 $ q(x_0, x_1,..., x_T)$ ，从先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$ 开始，逐步采样得到 $x_0$ 。上文提到 $q(x_{t-1}|x_{t})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(x_{t-1}|x_t)$ 来逼近 $q(x_{t-1}|x_{t})$ :
-
-$$
-p_\theta(x_{t-1}|x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t,t), \Sigma_\theta(x_t,t))
-$$
-
-完成训练后得到近似真实逆向分布的 $p_{\theta}(x_{t-1}|x_t)$，即可通过联合分布来进行采样：
-
-$$
-p_{\theta}(x_0,x_1,...,x_T) = p(x_T) \prod_{t=1}^{T} p_{\theta}(x_{t-1}|x_t)
-$$
-
-定义了前向和逆向的扩散过程，下一步就是确定优化目标，也就是损失函数。 -->
 
 前向扩散过程是***无参***的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备"无记忆性"，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
 
@@ -80,7 +33,7 @@ $$
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
     &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
+    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
 \end{aligned}
 $$
 
@@ -114,7 +67,7 @@ $$
 
 定义了前向和逆向的扩散过程，下一步就是确定优化目标，也就是损失函数。
 
-### 3. 优化目标
+### 3. 优化目标推导
 老规矩，直接最大化似然:
 
 $$
@@ -193,8 +146,8 @@ $$
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1}) \prod_{t=2}^T p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_1}|\mathbf{x_0}) \prod_{t=2}^T q(\mathbf{x_t}|\mathbf{x_{t-1}}, \mathbf{x_0})} \right] \\
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \prod_{t=2}^T \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_t}|\mathbf{x_{t-1}}, \mathbf{x_0})} \right] \\
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \prod_{t=2}^T \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_t}, \mathbf{x_0})} \cdot \frac{q(\mathbf{x_{t-1}}| \mathbf{x_0})}{q(\mathbf{x_t}| \mathbf{x_0})} \right] \\
-&= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \frac{q(\mathbf{x_1}| \mathbf{x_0})}{q(\mathbf{x_T}| \mathbf{x_0})} + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}  \right] \\
-&= \underbrace{\mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \log p_\theta(\mathbf{x_0}|\mathbf{x_1})}_{\text{reconstruction}} + \underbrace{\mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})}}_{\text{prior matching}} + \underbrace{\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}}_{\text{consistency term}} \\
+&= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[\frac{q(\mathbf{x_1}| \mathbf{x_0})}{q(\mathbf{x_T}| \mathbf{x_0})} \right] + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}  \right] \\
+&= \underbrace{\mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[\log p_\theta(\mathbf{x_0}|\mathbf{x_1})\right]}_{\text{reconstruction}} + \underbrace{\mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \left[\log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})}\right]}_{\text{prior matching}} + \underbrace{\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[\log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}\right]}_{\text{consistency term}} \\
 % &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) + \mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})} + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \\
 \end{aligned} 
 $$
@@ -203,11 +156,11 @@ $$
 
 $$
 \begin{aligned} 
-&\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \\
+&\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}\right] \\
 =&\sum_{t=2}^T \int q(\mathbf{x_{t-1}}, \mathbf{x_t} | \mathbf{x_0}) \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} d\mathbf{x_{t-1:t}} \\
 =&\sum_{t=2}^T \int q(\mathbf{x_{t-1}}| \mathbf{x_0}, \mathbf{x_t} ) q(\mathbf{x_t}| \mathbf{x_0})  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} d\mathbf{x_{t-1:t}} \\
 =& - \sum_{t=2}^T \int q(\mathbf{x_t}| \mathbf{x_0}) D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) d\mathbf{x_{t}} \\
-=& - \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) \\ 
+=& - \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) \right] \\ 
 \end{aligned} 
 $$
 
@@ -245,6 +198,115 @@ $$
 
 以上就是推导consistency term得到的最终优化目标了：两个均值向量之间的欧氏距离平方。实际上经过简单的变换，上述目标可以变为更简洁的形式，但在此之前，让我们看看重建项的解析形式：
 
+$$
+\begin{aligned}
+\log p_\theta(\mathbf{x_0}|\mathbf{x_1}) &= \log \mathcal{N} (\mathbf{x_0} | \mu_\theta(\mathbf{x_1}, 1), \sigma_{q}^2(1)\mathbf{I}) \\
+&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} - \frac{d}{2} \log 2\pi\sigma_{q}^2(1)
+\end{aligned}
+$$
+
+去掉与模型训练无关的参数得到最后的优化目标 $\mathcal{L}_{VLB}$ 为：
+
+$$
+\begin{aligned}
+\mathcal{L}_{VLB} &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) \right]+ \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \right] \\
+&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
+\end{aligned}
+$$
+
+### 4. $\mathcal{L}_{VLB}$ 求解/分析
+
+#### 4.1 优化形式一
+
+观察 $\mathcal{L}_{VLB}$，核心是优化：
+
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2
+$$
+
+已知 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式：
+
+$$
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 
+$$
+
+考虑到已知的变量和超参，可以将 $\mu_{\theta}(\mathbf{x}_t, t)$ 定义为：
+
+$$
+\mu_{\theta}(\mathbf{x}_t, t) := \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_\theta (\mathbf{x_t}, t) 
+$$
+
+容易发现，模型输出的 $ \mathbf{x}_\theta (\mathbf{x_t}, t) $ 现在学习目标为 $\mathbf{x_0}$， 那么优化目标可以改写为：
+
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2
+$$
+
+有意思的是，设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：
+
+$$
+\mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2 \right]
+$$
+
+#### 4.2 优化形式二
+
+回到 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式：
+
+$$
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 
+$$
+
+利用上我们已知的其他信息，也就是 $\mathbf{x}_t 和 \mathbf{x}_0$ 间的关系：
+
+$$
+\begin{aligned}
+\mathbf{x}_t &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \epsilon_{t} \\
+\mathbf{x_0} &= \frac{\mathbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_{t}}{\sqrt{\bar{\alpha}_t}}
+\end{aligned}
+$$
+
+代入 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式中：
+
+$$
+\begin{aligned}
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) &= \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 \\
+&= \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} (\frac{\mathbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_{t}}{\sqrt{\bar{\alpha}_t}}) \\
+&= \frac{(1 - \bar{\alpha}_{t-1})\alpha_t + 1 - \alpha_t}{(1 - \bar{\alpha}_t)\sqrt{\alpha_t}} \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{t} \\
+&= \frac{1}{\sqrt{\alpha_t}}  \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{t}
+\end{aligned}
+$$
+
+类似地，我们可以将 $\mu_{\theta}(\mathbf{x}_t, t)$ 定义为：
+
+$$
+\mu_{\theta}(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}}  \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{\theta} (\mathbf{x_t}, t)
+$$
+
+同样地，优化目标可以改写为：
+
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 }{\alpha_t(1 - \bar{\alpha}_t)}  \| \epsilon_t - \epsilon_\theta(\mathbf{x_t}, t)\|^2 
+$$
+
+根据 $\mathbf{x}_1 和 \mathbf{x}_0$ 间的关系，将重建项也改写一下：
+
+$$
+\begin{aligned}
+\mathbf{x}_1 &= \sqrt{\alpha_1} \mathbf{x}_0 + \sqrt{1 - \alpha_1} \epsilon_1 \\
+\mathbf{x}_0 &= \frac{1}{\alpha_1} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{\alpha_1} \epsilon_1 \\
+\frac{1}{2\sigma_{q}^2(1)} \| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2 &=  \frac{1}{2\sigma_{q}^2(1)} \cdot\frac{1 - \alpha_1 }{\alpha_1} \| \epsilon_1 - \epsilon_\theta(\mathbf{x_1}, 1)\|^2 
+\end{aligned}
+$$
+
+与优化形式一中一样，合并重建项，得到最终的 $\mathcal{L}_{VLB}$ 为：
+
+$$
+\mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 }{\alpha_t(1 - \bar{\alpha}_t)} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \epsilon_t - \epsilon_\theta(\mathbf{x_t}, t)\|^2 \right]
+$$
+
+容易发现，模型本质上是在学习一个噪声预测网络 $\epsilon_\theta$，其目标是最小化预测噪声 $\epsilon_\theta(\mathbf{x_t}, t)$与真实噪声 $\epsilon_t$ 之间的加权均方误差。
+
+### 5. Training 和 Inference流程
 
 
 <!-- $$

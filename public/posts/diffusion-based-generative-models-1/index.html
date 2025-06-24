@@ -12,8 +12,18 @@
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
 二、DDPM 算法框架
 1. 前向扩散过程（Forward Diffusion Process）
-
-前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。">
+前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},&hellip;\mathbf{x_t},&hellip;\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
+$$
+\begin{aligned}
+\mathbf{x_t} &= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
+    &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
+    &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
+    &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
+    &=  ... \\
+    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43;  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
+\end{aligned}
+$$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
     <meta name="generator" content="Hugo 0.146.5">
     
     
@@ -49,7 +59,9 @@
   <meta property="og:title" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
   <meta property="og:description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。">
+二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
+$$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
   <meta property="og:locale" content="zh_cn">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -62,16 +74,20 @@
   <meta itemprop="name" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
   <meta itemprop="description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。">
+二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
+$$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
   <meta itemprop="datePublished" content="2025-06-22T13:43:59+08:00">
   <meta itemprop="dateModified" content="2025-06-22T13:43:59+08:00">
-  <meta itemprop="wordCount" content="901">
+  <meta itemprop="wordCount" content="1334">
   <meta itemprop="keywords" content="Diffusion-Models,Deep-Learning,Generative-AI">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
   <meta name="twitter:description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。">
+二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
+$$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
 
 	
 
@@ -155,53 +171,6 @@
 <p>随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。</p>
 <h2 id="二ddpm-算法框架">二、DDPM 算法框架</h2>
 <h3 id="1-前向扩散过程forward-diffusion-process">1. 前向扩散过程（Forward Diffusion Process）</h3>
-<!-- 前向扩散过程是***无参***的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备“无记忆性 ”，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
-
-具体来说，从一个真实数据分布采样 $\mathbf{x}_0 \sim q(\mathbf{x})$, 通过逐步对数据 $x_0$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $ x_1,...x_t,...x_T $，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
-
-
-$$
-\begin{aligned}
-x_t &= \sqrt{\alpha_t} x_{t-1} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    % &= \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t } x_{t-2} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t} x_{t-2} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
-    &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} x_0 +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
-\end{aligned}
-$$
-
-其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度， 定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
-
-$$
-\begin{aligned}
-q(x_t|x_{t-1}) &\sim \mathcal{N}(x_t | \sqrt{{\alpha_t}} x_{t-1}, (1 - \alpha_t) I) \\
-q(x_t|x_0) &\sim \mathcal{N}(x_t | \sqrt{\bar{\alpha_t}} x_0, (1 - \bar{\alpha_t}) I)
-\end{aligned}
-$$
-
-当扩散过程足够长，可以得到预先假设的先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$
-
-Note：
-- 加噪过程中设置系数为 $ \sqrt{\alpha_t} 和 (1 - \sqrt{\alpha_t}) $ 是使其平方和为 $1$, 从而保持扩散过程中方差的稳定。在 SMLD 中, 因为系数设置的不同, 为方差膨胀的形式。
-- 逆向分布 $q(x_{t-1}|x_{t})$ 没有显式解析解，因为 $ x_{t-1} 和 \epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $ 1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(x_{t-1}|x_{t})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。
-
-
-### 2. 逆向扩散过程（Reverse Diffusion Process）
-前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(x_{t-1}|x_{t})$ 的形式，那就能够根据联合分布 $ q(x_0, x_1,..., x_T)$ ，从先验分布 $ q(x_T) \sim \mathcal{N}(x_T |0, I)$ 开始，逐步采样得到 $x_0$ 。上文提到 $q(x_{t-1}|x_{t})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(x_{t-1}|x_t)$ 来逼近 $q(x_{t-1}|x_{t})$ :
-
-$$
-p_\theta(x_{t-1}|x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t,t), \Sigma_\theta(x_t,t))
-$$
-
-完成训练后得到近似真实逆向分布的 $p_{\theta}(x_{t-1}|x_t)$，即可通过联合分布来进行采样：
-
-$$
-p_{\theta}(x_0,x_1,...,x_T) = p(x_T) \prod_{t=1}^{T} p_{\theta}(x_{t-1}|x_t)
-$$
-
-定义了前向和逆向的扩散过程，下一步就是确定优化目标，也就是损失函数。 -->
 <p>前向扩散过程是<em><strong>无参</strong></em>的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。</p>
 <p>具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},&hellip;\mathbf{x_t},&hellip;\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:</p>
 $$
@@ -211,7 +180,7 @@ $$
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
     &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
+    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
 \end{aligned}
 $$<p>其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:</p>
 $$
@@ -233,7 +202,7 @@ $$<p>完成训练后得到近似真实逆向分布的 $p_{\theta}(\mathbf{x_{t-1
 $$
 p_{\theta}(\mathbf{x_0},\mathbf{x_1},...,\mathbf{x_T}) = p(\mathbf{x_T}) \prod_{t=1}^{T} p_{\theta}(\mathbf{x_{t-1}}|\mathbf{x_t})
 $$<p>定义了前向和逆向的扩散过程，下一步就是确定优化目标，也就是损失函数。</p>
-<h3 id="3-优化目标">3. 优化目标</h3>
+<h3 id="3-优化目标推导">3. 优化目标推导</h3>
 <p>老规矩，直接最大化似然:</p>
 $$
 \begin{aligned}
@@ -292,18 +261,18 @@ $$
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1}) \prod_{t=2}^T p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_1}|\mathbf{x_0}) \prod_{t=2}^T q(\mathbf{x_t}|\mathbf{x_{t-1}}, \mathbf{x_0})} \right] \\
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \prod_{t=2}^T \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_t}|\mathbf{x_{t-1}}, \mathbf{x_0})} \right] \\
 &= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \prod_{t=2}^T \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_t}, \mathbf{x_0})} \cdot \frac{q(\mathbf{x_{t-1}}| \mathbf{x_0})}{q(\mathbf{x_t}| \mathbf{x_0})} \right] \\
-&= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \frac{q(\mathbf{x_1}| \mathbf{x_0})}{q(\mathbf{x_T}| \mathbf{x_0})} + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}  \right] \\
-&= \underbrace{\mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \log p_\theta(\mathbf{x_0}|\mathbf{x_1})}_{\text{reconstruction}} + \underbrace{\mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})}}_{\text{prior matching}} + \underbrace{\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}}_{\text{consistency term}} \\
+&= \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log \frac{p_\theta(\mathbf{x_T}) p_\theta(\mathbf{x_0}|\mathbf{x_1})}{q(\mathbf{x_1}|\mathbf{x_0})} \right] + \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[\frac{q(\mathbf{x_1}| \mathbf{x_0})}{q(\mathbf{x_T}| \mathbf{x_0})} \right] + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}  \right] \\
+&= \underbrace{\mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[\log p_\theta(\mathbf{x_0}|\mathbf{x_1})\right]}_{\text{reconstruction}} + \underbrace{\mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \left[\log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})}\right]}_{\text{prior matching}} + \underbrace{\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[\log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}\right]}_{\text{consistency term}} \\
 % &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) + \mathbb{E}_{q(\mathbf{x_{T}}|\mathbf{x_0})} \log \frac{p_\theta(\mathbf{x_T})}{q(\mathbf{x_{T}}|\mathbf{x_0})} + \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \\
 \end{aligned} 
 $$<p>第一项为重建项reconstruction, 第二项为先验项prior matching，第三项为consistency term。其中，第一项重建项和VAE中的重建项类似，因为 $p_\theta(\mathbf{x_0}|\mathbf{x_1})$ 为参数化的高斯分布，即优化重建图和原图的MSE；第二项先验项，因为我们假设步数足够的情况下， $ q(\mathbf{x_T} | \mathbf{x_0}) \sim \mathcal{N}(\mathbf{x_T} |0, I)$ 且  $p_\theta(\mathbf{x_T}) \sim \mathcal{N}(0, I)$，推理采样阶段 $p_\theta(\mathbf{x_T})$ 从正态分布中采样，与模型参数无关，所以先验项可以忽略； 重点是第三项consistency term，其实训练阶段，重建项往往也合并到了consistency term中，继续对consistency term进行推导：</p>
 $$
 \begin{aligned} 
-&\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \\
+&\sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})}\right] \\
 =&\sum_{t=2}^T \int q(\mathbf{x_{t-1}}, \mathbf{x_t} | \mathbf{x_0}) \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} d\mathbf{x_{t-1:t}} \\
 =&\sum_{t=2}^T \int q(\mathbf{x_{t-1}}| \mathbf{x_0}, \mathbf{x_t} ) q(\mathbf{x_t}| \mathbf{x_0})  \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} d\mathbf{x_{t-1:t}} \\
 =& - \sum_{t=2}^T \int q(\mathbf{x_t}| \mathbf{x_0}) D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) d\mathbf{x_{t}} \\
-=& - \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) \\ 
+=& - \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ D_{\text{KL}} (q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0}) \, || \, p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})) \right] \\ 
 \end{aligned} 
 $$<p>根据我们之前的推导，不难发现对consistency term来说，仍然是求两个高斯分布的KL散度。在VAE中就提到过，俩个高斯分布的KL散度是可以直接算解析解的：</p>
 $$
@@ -327,6 +296,70 @@ $$
 =& \frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2
 \end{aligned}
 $$<p>以上就是推导consistency term得到的最终优化目标了：两个均值向量之间的欧氏距离平方。实际上经过简单的变换，上述目标可以变为更简洁的形式，但在此之前，让我们看看重建项的解析形式：</p>
+$$
+\begin{aligned}
+\log p_\theta(\mathbf{x_0}|\mathbf{x_1}) &= \log \mathcal{N} (\mathbf{x_0} | \mu_\theta(\mathbf{x_1}, 1), \sigma_{q}^2(1)\mathbf{I}) \\
+&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} - \frac{d}{2} \log 2\pi\sigma_{q}^2(1)
+\end{aligned}
+$$<p>去掉与模型训练无关的参数得到最后的优化目标 $\mathcal{L}_{VLB}$ 为：</p>
+$$
+\begin{aligned}
+\mathcal{L}_{VLB} &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) \right]+ \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \right] \\
+&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
+\end{aligned}
+$$<h3 id="4-mathcall_vlb-求解分析">4. $\mathcal{L}_{VLB}$ 求解/分析</h3>
+<h4 id="41-优化形式一">4.1 优化形式一</h4>
+<p>观察 $\mathcal{L}_{VLB}$，核心是优化：</p>
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2
+$$<p>已知 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式：</p>
+$$
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 
+$$<p>考虑到已知的变量和超参，可以将 $\mu_{\theta}(\mathbf{x}_t, t)$ 定义为：</p>
+$$
+\mu_{\theta}(\mathbf{x}_t, t) := \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_\theta (\mathbf{x_t}, t) 
+$$<p>容易发现，模型输出的 $ \mathbf{x}_\theta (\mathbf{x_t}, t) $ 现在学习目标为 $\mathbf{x_0}$， 那么优化目标可以改写为：</p>
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2
+$$<p>有意思的是，设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：</p>
+$$
+\mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2 \right]
+$$<h4 id="42-优化形式二">4.2 优化形式二</h4>
+<p>回到 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式：</p>
+$$
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 
+$$<p>利用上我们已知的其他信息，也就是 $\mathbf{x}_t 和 \mathbf{x}_0$ 间的关系：</p>
+$$
+\begin{aligned}
+\mathbf{x}_t &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \epsilon_{t} \\
+\mathbf{x_0} &= \frac{\mathbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_{t}}{\sqrt{\bar{\alpha}_t}}
+\end{aligned}
+$$<p>代入 $\mu_q(\mathbf{x}_t, \mathbf{x}_0)$ 的表达式中：</p>
+$$
+\begin{aligned}
+\mu_q(\mathbf{x}_t, \mathbf{x}_0) &= \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} \mathbf{x}_0 \\
+&= \frac{(1 - \bar{\alpha}_{t-1})\sqrt{\alpha_t}}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{(1 - \alpha_t)\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_t} (\frac{\mathbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_{t}}{\sqrt{\bar{\alpha}_t}}) \\
+&= \frac{(1 - \bar{\alpha}_{t-1})\alpha_t + 1 - \alpha_t}{(1 - \bar{\alpha}_t)\sqrt{\alpha_t}} \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{t} \\
+&= \frac{1}{\sqrt{\alpha_t}}  \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{t}
+\end{aligned}
+$$<p>类似地，我们可以将 $\mu_{\theta}(\mathbf{x}_t, t)$ 定义为：</p>
+$$
+\mu_{\theta}(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}}  \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{(1 - \bar{\alpha}_t)}\sqrt{\alpha_t}} \epsilon_{\theta} (\mathbf{x_t}, t)
+$$<p>同样地，优化目标可以改写为：</p>
+$$
+\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 }{\alpha_t(1 - \bar{\alpha}_t)}  \| \epsilon_t - \epsilon_\theta(\mathbf{x_t}, t)\|^2 
+$$<p>根据 $\mathbf{x}_1 和 \mathbf{x}_0$ 间的关系，将重建项也改写一下：</p>
+$$
+\begin{aligned}
+\mathbf{x}_1 &= \sqrt{\alpha_1} \mathbf{x}_0 + \sqrt{1 - \alpha_1} \epsilon_1 \\
+\mathbf{x}_0 &= \frac{1}{\alpha_1} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{\alpha_1} \epsilon_1 \\
+\frac{1}{2\sigma_{q}^2(1)} \| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2 &=  \frac{1}{2\sigma_{q}^2(1)} \cdot\frac{1 - \alpha_1 }{\alpha_1} \| \epsilon_1 - \epsilon_\theta(\mathbf{x_1}, 1)\|^2 
+\end{aligned}
+$$<p>与优化形式一中一样，合并重建项，得到最终的 $\mathcal{L}_{VLB}$ 为：</p>
+$$
+\mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 }{\alpha_t(1 - \bar{\alpha}_t)} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \epsilon_t - \epsilon_\theta(\mathbf{x_t}, t)\|^2 \right]
+$$<p>容易发现，模型本质上是在学习一个噪声预测网络 $\epsilon_\theta$，其目标是最小化预测噪声 $\epsilon_\theta(\mathbf{x_t}, t)$与真实噪声 $\epsilon_t$ 之间的加权均方误差。</p>
+<h3 id="5-training-和-inference流程">5. Training 和 Inference流程</h3>
 <!-- $$
 \begin{aligned}
 q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) &= \frac{q(\mathbf{x}_t | \mathbf{x}_{t-1}) \cdot q(\mathbf{x}_{t-1} | \mathbf{x}_0)}{q(\mathbf{x_{t}} | \mathbf{x}_0)} \\

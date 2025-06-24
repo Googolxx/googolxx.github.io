@@ -49,8 +49,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Posts">
-  <meta itemprop="datePublished" content="2025-06-22T13:43:59+08:00">
-  <meta itemprop="dateModified" content="2025-06-22T13:43:59+08:00">
+  <meta itemprop="datePublished" content="2025-06-24T20:08:36+08:00">
+  <meta itemprop="dateModified" content="2025-06-24T20:08:36+08:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Posts">
 
@@ -126,6 +126,59 @@
             <div class="mb3 pa4 mid-gray overflow-hidden">
     
       <div class="f6">
+        June 24, 2025
+      </div>
+    
+    <h1 class="f3 near-black">
+      <a href="/posts/diffusion-based-generative-models-2/" class="link black dim">
+        Diffusion-Based Generative Models &lt;2&gt;: DDIM
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h2 id="一引言">一、引言</h2>
+<p>上一篇内容讲了DDPM的算法框架，看起来一切都很完美，但采样速度还是太慢了，如果设置 $ T=1000$, 那采样的代价还是太大了。因此迎来了DDIM (Denoising Diffusion Implicit Models)</p>
+<h3 id="11-ddpm视角下的ddim">1.1 DDPM视角下的DDIM</h3>
+<h3 id="核心思想">核心思想</h3>
+<ul>
+<li><strong>DDPM</strong> 是一个基于马尔可夫链的扩散模型，通过逐步加噪（前向过程）和逐步去噪（反向过程）学习数据分布。</li>
+<li><strong>DDIM</strong> 是 DDPM 的 <strong>非马尔可夫推广</strong>，它重新参数化了反向过程，允许 <strong>跳过中间步骤</strong>，从而加速采样。</li>
+</ul>
+<h3 id="关键差异">关键差异</h3>
+<h4 id="非马尔可夫性">非马尔可夫性</h4>
+<ul>
+<li><strong>DDPM</strong>：前向和反向过程都是马尔可夫的（下一步仅依赖当前步）。</li>
+<li><strong>DDIM</strong>：通过设计非马尔可夫的逆过程，打破了这一限制，允许更灵活的生成路径（如跳步采样）。</li>
+</ul>
+<h4 id="确定性生成">确定性生成</h4>
+<ul>
+<li><strong>DDPM</strong>：反向过程是随机的（每一步注入高斯噪声）。</li>
+<li><strong>DDIM</strong>：可以通过设定噪声方差为0，实现 <strong>确定性生成</strong>（类似ODE），从而生成结果可重复。</li>
+</ul>
+<h4 id="采样加速">采样加速</h4>
+<ul>
+<li>DDIM 通过重新参数化，将 DDPM 的 $T$ 步采样压缩到 $S$ 步（$S \ll T$），而保持相似的生成质量。</li>
+</ul>
+<h3 id="数学形式">数学形式</h3>
+<p>DDIM 的逆过程改写为：
+</p>
+$$
+x_{t-1} = \sqrt{\alpha_{t-1}} \left( \frac{x_t - \sqrt{1-\alpha_t} \epsilon_\theta(x_t, t)}{\sqrt{\alpha_t}} \right) + \sqrt{1-\alpha_{t-1}} \epsilon_\theta(x_t, t)
+$$<p>
+其中 $\alpha_t$ 是噪声调度，$\epsilon_\theta$ 是去噪网络。当噪声项系数为0时，生成过程变为确定性。</p>
+<hr>
+<h2 id="12-sdeode视角下的ddim">1.2. SDE/ODE视角下的DDIM</h2>
+<h3 id="核心思想-1">核心思想</h3>
+<p>扩散模型可以统一描述为 <strong>随机微分方程（SDE）</strong> 或 <strong>常微分方程（ODE）</strong> 的离散化：</p>
+    </div>
+  <a href="/posts/diffusion-based-generative-models-2/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+            <div class="mb3 pa4 mid-gray overflow-hidden">
+    
+      <div class="f6">
         June 22, 2025
       </div>
     
@@ -150,7 +203,7 @@ $$
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
     &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
+    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
 \end{aligned}
 $$<p>其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:</p>
     </div>

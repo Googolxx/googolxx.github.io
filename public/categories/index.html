@@ -157,7 +157,7 @@ $$
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
     &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
     &=  ... \\
-    &= \sqrt{\bar{\alpha_t}} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha_t}} \bar{\epsilon}_{t}
+    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
 \end{aligned}
 $$<p>其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:</p>
     </div>

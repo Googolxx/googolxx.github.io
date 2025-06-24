@@ -7,10 +7,10 @@
     <title>Diffusion-Based Generative Models &lt;1&gt;: DDPM | Renjie&#39;s log</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="
-一、引言
+一. 引言
 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架
+二. DDPM 算法框架
 1. 前向扩散过程（Forward Diffusion Process）
 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
 具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},&hellip;\mathbf{x_t},&hellip;\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
@@ -57,9 +57,9 @@ $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，�
     <meta property="og:url" content="http://localhost:1313/posts/diffusion-based-generative-models-1/">
   <meta property="og:site_name" content="Renjie&#39;s log">
   <meta property="og:title" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
-  <meta property="og:description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
+  <meta property="og:description" content="一. 引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+二. DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
 具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
 $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
   <meta property="og:locale" content="zh_cn">
@@ -72,20 +72,20 @@ $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \s
     <meta property="article:tag" content="Generative-AI">
 
   <meta itemprop="name" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
-  <meta itemprop="description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
+  <meta itemprop="description" content="一. 引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+二. DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
 具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
 $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
   <meta itemprop="datePublished" content="2025-06-22T13:43:59+08:00">
   <meta itemprop="dateModified" content="2025-06-22T13:43:59+08:00">
-  <meta itemprop="wordCount" content="1334">
+  <meta itemprop="wordCount" content="1336">
   <meta itemprop="keywords" content="Diffusion-Models,Deep-Learning,Generative-AI">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
-  <meta name="twitter:description" content="一、引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
+  <meta name="twitter:description" content="一. 引言 扩散模型（Diffusion Models）作为当前生成式 AI 的核心范式，受热力学启发1，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 DDPM 2 (Denoising Diffusion Probabilistic Models)。
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
-二、DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
+二. DDPM 算法框架 1. 前向扩散过程（Forward Diffusion Process） 前向扩散过程是无参的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&#34;无记忆性&#34;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。
 具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},…\mathbf{x_t},…\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:
 $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:">
 
@@ -166,10 +166,10 @@ $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \s
       
     </header>
     <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><!-- summary = "深入解读去噪扩散概率模型 (DDPM) 的核心算法与数学推导，揭示其如何通过前向加噪与反向去噪过程实现高质量生成。" -->
-<h2 id="一引言">一、引言</h2>
+<h2 id="一-引言">一. 引言</h2>
 <p>扩散模型（<strong>Diffusion Models</strong>）作为当前生成式 AI 的核心范式，受热力学启发<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 <strong>DDPM</strong> <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> (Denoising Diffusion Probabilistic Models)。</p>
 <p>随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。</p>
-<h2 id="二ddpm-算法框架">二、DDPM 算法框架</h2>
+<h2 id="二-ddpm-算法框架">二. DDPM 算法框架</h2>
 <h3 id="1-前向扩散过程forward-diffusion-process">1. 前向扩散过程（Forward Diffusion Process）</h3>
 <p>前向扩散过程是<em><strong>无参</strong></em>的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。</p>
 <p>具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},&hellip;\mathbf{x_t},&hellip;\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:</p>

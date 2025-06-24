@@ -11,14 +11,14 @@ mermaid = true
 
 
 
-## 一、引言
+## 一. 引言
 
 扩散模型（**Diffusion Models**）作为当前生成式 AI 的核心范式，受热力学启发[^1]，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 **DDPM** [^2] (Denoising Diffusion Probabilistic Models)。
 
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
 
 
-## 二、DDPM 算法框架
+## 二. DDPM 算法框架
 
 ### 1. 前向扩散过程（Forward Diffusion Process）
 

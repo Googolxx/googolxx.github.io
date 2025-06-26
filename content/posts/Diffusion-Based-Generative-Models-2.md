@@ -293,7 +293,9 @@ $$
 $$
 
 那么的 DDIM的推导，前向/逆向过程就都梳理完了。
-我觉得应该还留下一个疑问，就是为什么加速采样的情况下，为什么能直接使用 DDPM训练好的模型，只需要修改采样部分？这个问题我觉得站在SMLD或者ODE的视角去分析，就容易理解了。 
+我觉得应该还留下一个疑问，就是为什么加速采样的情况下，为什么能直接使用 DDPM训练好的模型，只需要修改采样部分？
+这涉及到是Diffusion model 区别于其他生成方法的核心优势之一 “训练-采样解耦”的特性。
+这个问题我觉得站在SMLD或者ODE的视角去分析其本质，就容易理解了。
 
 <!-- $$
 \mathbf{x_{\tau_{i-1}}} = \sqrt{\bar{\alpha}_{\tau_{i-1}}} (\frac{1}{\sqrt{\bar{\alpha}_\tau_{i}}} \mathbf{x}_\tau_{i} - \frac{\sqrt{1 - \bar{\alpha}_\tau_{i}}}{\sqrt{\bar{\alpha}_\tau_{i}}} \cdot \epsilon_\theta(\mathbf{x_\tau_{i}}, \tau_{i})) + \sqrt{1 - \bar{\alpha}_{\tau_{i-1}} - \sigma_\tau_{i}^2} \cdot \epsilon_\tau_{i}^{''}

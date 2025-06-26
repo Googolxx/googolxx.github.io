@@ -58,6 +58,8 @@ Note：
 - 加噪过程中设置系数为 $ \sqrt{\alpha_t}$ 和 $(1 - \sqrt{\alpha_t})$ 是使其平方和为 $1$，从而保持扩散过程中方差的稳定。在SMLD中，因为系数设置的不同，为方差膨胀的形式。
 - 逆向分布 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 没有显式解析解，因为 $\mathbf{x_{t-1}}$ 和 $\epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。
 
+{{< figure src="/pic_diff_1/pipeline.png" title="">}}
+
 ### 2. 逆向扩散过程（Reverse Diffusion Process）
 前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 的形式，那就能够根据联合分布 $q(\mathbf{x_0}, \mathbf{x_1},..., \mathbf{x_T})$，从先验分布 $q(\mathbf{x_T}) = \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$ 开始，逐步采样得到 $\mathbf{x_0}$。上文提到 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(\mathbf{x_{t-1}}|\mathbf{x_t})$ 来逼近 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$:
 

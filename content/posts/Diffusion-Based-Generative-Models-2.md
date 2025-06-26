@@ -28,12 +28,12 @@ mermaid = true
 #### 采样加速
 - DDIM 通过重新参数化，将 DDPM 的 $T$ 步采样压缩到 $S$ 步（$S \ll T$），而保持相似的生成质量。
 
-#### 数学形式
+<!-- #### 数学形式
 DDIM 的逆过程改写为：
 $$
 x_{t-1} = \sqrt{\alpha_{t-1}} \left( \frac{x_t - \sqrt{1-\alpha_t} \epsilon_\theta(x_t, t)}{\sqrt{\alpha_t}} \right) + \sqrt{1-\alpha_{t-1}} \epsilon_\theta(x_t, t)
 $$
-其中 $\alpha_t$ 是噪声调度，$\epsilon_\theta$ 是去噪网络。当噪声项系数为0时，生成过程变为确定性。
+其中 $\alpha_t$ 是噪声调度，$\epsilon_\theta$ 是去噪网络。当噪声项系数为0时，生成过程变为确定性。 -->
 
 ---
 

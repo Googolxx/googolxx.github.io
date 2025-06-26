@@ -301,7 +301,7 @@ $$
 $$
 \begin{aligned}
 \mathbf{x}_1 &= \sqrt{\alpha_1} \mathbf{x}_0 + \sqrt{1 - \alpha_1} \epsilon_1 \\
-\mathbf{x}_0 &= \frac{1}{sqrt{\alpha_1}} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{sqrt{\alpha_1}} \epsilon_1 \\
+\mathbf{x}_0 &= \frac{1}{\sqrt{\alpha_1}} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{\sqrt{\alpha_1}} \epsilon_1 \\
 \frac{1}{2\sigma_{q}^2(1)} \| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2 &=  \frac{1}{2\sigma_{q}^2(1)} \cdot\frac{1 - \alpha_1 }{\alpha_1} \| \epsilon_1 - \epsilon_\theta(\mathbf{x_1}, 1)\|^2 
 \end{aligned}
 $$

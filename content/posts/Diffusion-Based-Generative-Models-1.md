@@ -218,7 +218,7 @@ $$
 $$
 \begin{aligned}
 \mathcal{L}_{VLB} &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) \right]+ \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \right] \\
-&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
+&= - \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} \right] -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
 \end{aligned}
 $$
 
@@ -250,7 +250,7 @@ $$
 \frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2
 $$
 
-有意思的是，设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：
+设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：
 
 $$
 \mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2 \right]

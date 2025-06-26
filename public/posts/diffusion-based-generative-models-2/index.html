@@ -90,7 +90,7 @@ $$
 1.2 SDE/ODE视角下的DDIM 核心思想 扩散模型可以统一描述为 随机微分方程（SDE） 或 常微分方程（ODE） 的离散化：">
   <meta itemprop="datePublished" content="2025-06-24T20:08:36+08:00">
   <meta itemprop="dateModified" content="2025-06-24T20:08:36+08:00">
-  <meta itemprop="wordCount" content="976">
+  <meta itemprop="wordCount" content="981">
   <meta itemprop="keywords" content="Diffusion-Models,Deep-Learning,Generative-AI">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Diffusion-Based Generative Models &lt;2&gt;: DDIM">
@@ -383,7 +383,9 @@ $$<ul>
 $$
 \mathbf{x}_{\tau_{i-1}} = \sqrt{\bar{\alpha}_{\tau_{i-1}}} \left( \frac{1}{\sqrt{\bar{\alpha}_{\tau_i}}} \mathbf{x}_{\tau_i} - \frac{\sqrt{1 - \bar{\alpha}_{\tau_i}}}{\sqrt{\bar{\alpha}_{\tau_i}}} \cdot \epsilon_\theta(\mathbf{x}_{\tau_i}, \tau_i) \right) + \sqrt{1 - \bar{\alpha}_{\tau_{i-1}} } \cdot \epsilon_\theta(\mathbf{x_t}, t)
 $$<p>那么的 DDIM的推导，前向/逆向过程就都梳理完了。
-我觉得应该还留下一个疑问，就是为什么加速采样的情况下，为什么能直接使用 DDPM训练好的模型，只需要修改采样部分？这个问题我觉得站在SMLD或者ODE的视角去分析，就容易理解了。</p>
+我觉得应该还留下一个疑问，就是为什么加速采样的情况下，为什么能直接使用 DDPM训练好的模型，只需要修改采样部分？
+这涉及到是Diffusion model 区别于其他生成方法的核心优势之一 “训练-采样解耦”的特性。
+这个问题我觉得站在SMLD或者ODE的视角去分析其本质，就容易理解了。</p>
 <!-- $$
 \mathbf{x_{\tau_{i-1}}} = \sqrt{\bar{\alpha}_{\tau_{i-1}}} (\frac{1}{\sqrt{\bar{\alpha}_\tau_{i}}} \mathbf{x}_\tau_{i} - \frac{\sqrt{1 - \bar{\alpha}_\tau_{i}}}{\sqrt{\bar{\alpha}_\tau_{i}}} \cdot \epsilon_\theta(\mathbf{x_\tau_{i}}, \tau_{i})) + \sqrt{1 - \bar{\alpha}_{\tau_{i-1}} - \sigma_\tau_{i}^2} \cdot \epsilon_\tau_{i}^{''}
 $$ -->

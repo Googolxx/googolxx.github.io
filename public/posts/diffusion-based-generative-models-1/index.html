@@ -80,7 +80,7 @@ $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \s
 $$ \begin{aligned} \mathbf{x_t} &amp;= \sqrt{\alpha_t} \mathbf{x_{t-1}} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} &#43; \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\ &amp;= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} &#43; \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\ &amp;= ... \\ &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x_0} &#43; \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t} \end{aligned} $$其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度。">
   <meta itemprop="datePublished" content="2025-06-22T13:43:59+08:00">
   <meta itemprop="dateModified" content="2025-06-22T13:43:59+08:00">
-  <meta itemprop="wordCount" content="1441">
+  <meta itemprop="wordCount" content="1444">
   <meta itemprop="keywords" content="Diffusion-Models,Deep-Learning,Generative-AI">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Diffusion-Based Generative Models &lt;1&gt;: DDPM">
@@ -198,6 +198,9 @@ $$<p>当扩散过程足够长，可以得到预先假设的先验分布 $ q(\mat
 <li>加噪过程中设置系数为 $ \sqrt{\alpha_t}$ 和 $(1 - \sqrt{\alpha_t})$ 是使其平方和为 $1$，从而保持扩散过程中方差的稳定。在SMLD中，因为系数设置的不同，为方差膨胀的形式。</li>
 <li>逆向分布 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 没有显式解析解，因为 $\mathbf{x_{t-1}}$ 和 $\epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。</li>
 </ul>
+<figure><img src="/pic_diff_1/pipeline.png">
+</figure>
+
 <h3 id="2-逆向扩散过程reverse-diffusion-process">2. 逆向扩散过程（Reverse Diffusion Process）</h3>
 <p>前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 的形式，那就能够根据联合分布 $q(\mathbf{x_0}, \mathbf{x_1},&hellip;, \mathbf{x_T})$，从先验分布 $q(\mathbf{x_T}) = \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$ 开始，逐步采样得到 $\mathbf{x_0}$。上文提到 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(\mathbf{x_{t-1}}|\mathbf{x_t})$ 来逼近 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$:</p>
 $$
@@ -309,7 +312,7 @@ $$<p>去掉与模型训练无关的参数得到最后的优化目标 $\mathcal{L
 $$
 \begin{aligned}
 \mathcal{L}_{VLB} &= \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \log p_\theta(\mathbf{x_0}|\mathbf{x_1}) \right]+ \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{1:T}}|\mathbf{x_0})}  \left[ \log  \frac{p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t})}{q(\mathbf{x_{t-1}}|\mathbf{x_{t}}, \mathbf{x_0})} \right] \\
-&= - \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
+&= - \mathbb{E}_{q(\mathbf{x_{1}}|\mathbf{x_0})} \left[ \frac{\| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2}{2\sigma_{q}^2(1)} \right] -  \sum_{t=2}^T \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[\frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 \right]
 \end{aligned}
 $$<h3 id="4-mathcall_vlb-求解分析">4. $\mathcal{L}_{VLB}$ 求解/分析</h3>
 <h4 id="41-优化形式一">4.1 优化形式一</h4>
@@ -325,7 +328,7 @@ $$
 $$<p>容易发现，模型输出的 $ \mathbf{x}_\theta (\mathbf{x_t}, t) $ 现在学习目标为 $\mathbf{x_0}$， 那么优化目标可以改写为：</p>
 $$
 \frac{1}{2\sigma_{q}^2(t)} \|  \mu_q(\mathbf{x}_t, \mathbf{x}_0) -  \mu_{\theta}(\mathbf{x}_t, t) \|^2 = \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2
-$$<p>有意思的是，设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：</p>
+$$<p>设置 $ \alpha_0 =1$, 可以发现与重建项一致，进行合并，可以得到：</p>
 $$
 \mathcal{L}_{VLB} = - \sum_{t=1}^T \frac{1}{2\sigma_{q}^2(t)} \cdot \frac{(1 - \alpha_t)^2 \bar{\alpha}_{t-1}}{(1 - \bar{\alpha}_t)^2} \mathbb{E}_{q(\mathbf{x_{t}}|\mathbf{x_0})} \left[ \| \mathbf{x_0} - \mathbf{x}_\theta (\mathbf{x_t}, t)\|^2 \right]
 $$<h4 id="42-优化形式二">4.2 优化形式二</h4>

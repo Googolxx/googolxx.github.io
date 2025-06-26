@@ -18,6 +18,8 @@ mermaid = true
 随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。
 
 
+---
+
 ## 二. DDPM 算法框架
 
 ### 1. 前向扩散过程（Forward Diffusion Process）
@@ -37,23 +39,23 @@ $$
 \end{aligned}
 $$
 
-其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha_t} = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
+其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
 
 $$
 \begin{aligned}
-q(\mathbf{x_t}|\mathbf{x_{t-1}}) &\sim \mathcal{N}(\mathbf{x_t} | \sqrt{{\alpha_t}} \mathbf{x_{t-1}}, (1 - \alpha_t) \mathbf{I}) \\
-q(\mathbf{x_t}|\mathbf{x_0}) &\sim \mathcal{N}(\mathbf{x_t} | \sqrt{\bar{\alpha}_t} \mathbf{x_0}, (1 - \bar{\alpha}_t) \mathbf{I})
+q(\mathbf{x_t}|\mathbf{x_{t-1}}) = \mathcal{N}(\mathbf{x_t} | \sqrt{{\alpha_t}} \mathbf{x_{t-1}}, (1 - \alpha_t) \mathbf{I}) \\
+q(\mathbf{x_t}|\mathbf{x_0}) = \mathcal{N}(\mathbf{x_t} | \sqrt{\bar{\alpha}_t} \mathbf{x_0}, (1 - \bar{\alpha}_t) \mathbf{I})
 \end{aligned}
 $$
 
-当扩散过程足够长，可以得到预先假设的先验分布 $ q(\mathbf{x_T}) \sim \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$
+当扩散过程足够长，可以得到预先假设的先验分布 $ q(\mathbf{x_T}) = \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$
 
 Note：
 - 加噪过程中设置系数为 $ \sqrt{\alpha_t}$ 和 $(1 - \sqrt{\alpha_t})$ 是使其平方和为 $1$，从而保持扩散过程中方差的稳定。在SMLD中，因为系数设置的不同，为方差膨胀的形式。
 - 逆向分布 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 没有显式解析解，因为 $\mathbf{x_{t-1}}$ 和 $\epsilon_{t}$ 的依赖性使得无法直接利用前向过程的线性高斯性质。但是，当 $1-\alpha_t$ 足够小（即扩散步长极短或总步数 $T$ 足够大）时，$q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 可近似为高斯分布，这一近似在扩散过程的连续极限下（如随机微分方程SDE的视角下）有理论支持。
 
 ### 2. 逆向扩散过程（Reverse Diffusion Process）
-前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 的形式，那就能够根据联合分布 $q(\mathbf{x_0}, \mathbf{x_1},..., \mathbf{x_T})$，从先验分布 $q(\mathbf{x_T}) \sim \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$ 开始，逐步采样得到 $\mathbf{x_0}$。上文提到 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(\mathbf{x_{t-1}}|\mathbf{x_t})$ 来逼近 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$:
+前向过程在手动设计下，均有明确的解析解。在假设逆向过程也为马尔可夫链的情况下，如果我们能够得到逆向过程 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 的形式，那就能够根据联合分布 $q(\mathbf{x_0}, \mathbf{x_1},..., \mathbf{x_T})$，从先验分布 $q(\mathbf{x_T}) = \mathcal{N}(\mathbf{x_T} |\mathbf{0}, \mathbf{I})$ 开始，逐步采样得到 $\mathbf{x_0}$。上文提到 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$ 虽然是未知的，但可近似为高斯分布，所以这里用参数化的神经网络学习 $p_{\theta}(\mathbf{x_{t-1}}|\mathbf{x_t})$ 来逼近 $q(\mathbf{x_{t-1}}|\mathbf{x_{t}})$:
 
 $$
 p_\theta(\mathbf{x_{t-1}}|\mathbf{x_t}) = \mathcal{N}(\mathbf{x_{t-1}}; \mu_\theta(\mathbf{x_t},t), \Sigma_\theta(\mathbf{x_t},t))
@@ -152,7 +154,7 @@ $$
 \end{aligned} 
 $$
 
-第一项为重建项reconstruction, 第二项为先验项prior matching，第三项为consistency term。其中，第一项重建项和VAE中的重建项类似，因为 $p_\theta(\mathbf{x_0}|\mathbf{x_1})$ 为参数化的高斯分布，即优化重建图和原图的MSE；第二项先验项，因为我们假设步数足够的情况下， $ q(\mathbf{x_T} | \mathbf{x_0}) \sim \mathcal{N}(\mathbf{x_T} |0, I)$ 且  $p_\theta(\mathbf{x_T}) \sim \mathcal{N}(0, I)$，推理采样阶段 $p_\theta(\mathbf{x_T})$ 从正态分布中采样，与模型参数无关，所以先验项可以忽略； 重点是第三项consistency term，其实训练阶段，重建项往往也合并到了consistency term中，继续对consistency term进行推导：
+第一项为重建项reconstruction, 第二项为先验项prior matching，第三项为consistency term。其中，第一项重建项和VAE中的重建项类似，因为 $p_\theta(\mathbf{x_0}|\mathbf{x_1})$ 为参数化的高斯分布，即优化重建图和原图的MSE；第二项先验项，因为我们假设步数足够的情况下， $ q(\mathbf{x_T} | \mathbf{x_0}) = \mathcal{N}(\mathbf{x_T} |0, I)$ 且  $p_\theta(\mathbf{x_T}) = \mathcal{N}(0, I)$，推理采样阶段 $p_\theta(\mathbf{x_T})$ 从正态分布中采样，与模型参数无关，所以先验项可以忽略； 重点是第三项consistency term，其实训练阶段，重建项往往也合并到了consistency term中，继续对consistency term进行推导：
 
 $$
 \begin{aligned} 
@@ -293,7 +295,7 @@ $$
 $$
 \begin{aligned}
 \mathbf{x}_1 &= \sqrt{\alpha_1} \mathbf{x}_0 + \sqrt{1 - \alpha_1} \epsilon_1 \\
-\mathbf{x}_0 &= \frac{1}{\alpha_1} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{\alpha_1} \epsilon_1 \\
+\mathbf{x}_0 &= \frac{1}{sqrt{\alpha_1}} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{sqrt{\alpha_1}} \epsilon_1 \\
 \frac{1}{2\sigma_{q}^2(1)} \| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2 &=  \frac{1}{2\sigma_{q}^2(1)} \cdot\frac{1 - \alpha_1 }{\alpha_1} \| \epsilon_1 - \epsilon_\theta(\mathbf{x_1}, 1)\|^2 
 \end{aligned}
 $$
@@ -306,7 +308,36 @@ $$
 
 容易发现，模型本质上是在学习一个噪声预测网络 $\epsilon_\theta$，其目标是最小化预测噪声 $\epsilon_\theta(\mathbf{x_t}, t)$与真实噪声 $\epsilon_t$ 之间的加权均方误差。
 
-### 5. Training 和 Inference流程
+---
+
+## 三. Training 和 Inference流程
+
+Training 流程，损失函数就是 $ \epsilon_\theta(\mathbf{x_t}, t) $ 与 $\epsilon_t$ 的欧氏距离平方
+
+Inference流程就是分解联合分布 $p_\theta(\mathbf{x_{0:T}})$，从 $p_\theta(\mathbf{x_{t-1}} | \mathbf{x_t})$ 中逐步完成采样
+
+----
+### Algorithm 1 Training
+
+1: **repeat**  
+2: &nbsp;&nbsp;&nbsp;&nbsp; $x_0 \sim q(x_0)$  
+3: &nbsp;&nbsp;&nbsp;&nbsp; $t \sim \text{Uniform}(\{1, \ldots, T\})$  
+4: &nbsp;&nbsp;&nbsp;&nbsp; $\epsilon \sim \mathcal{N}(0, \mathbf{I})$  
+5: &nbsp;&nbsp;&nbsp;&nbsp; Take gradient descent step on  
+&nbsp;&nbsp;&nbsp;&nbsp; $\nabla_\theta \left\| \epsilon - \epsilon_\theta\left(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon, t \right) \right\|^2$  
+6: **until** converged  
+
+----
+### Algorithm 2 Sampling (Inference)
+
+1: $\mathbf{x_T} \sim \mathcal{N}(0, \mathbf{I})$  
+2: **for** $t = T, \ldots, 1$ **do**  
+3: &nbsp;&nbsp;&nbsp;&nbsp; $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ **if** $t > 1$, **else** $\mathbf{z} = 0$  
+4: &nbsp;&nbsp;&nbsp;&nbsp; $\mathbf{x_{t-1}} = \frac{1}{\sqrt{\alpha}} \left( \mathbf{x_t} - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(\mathbf{x_t}, t) \right) + \sigma_t \mathbf{z}$  
+5: **end for**  
+6: **return** $\mathbf{x}_0$  
+
+<!-- \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \epsilon_\theta(x_t, t) \right) + \sigma_t z$   -->
 
 
 <!-- $$

@@ -1,6 +1,6 @@
 +++
 date = '2025-06-24T20:08:36+08:00'
-draft = true
+draft = false
 title = 'Diffusion-Based Generative Models <2>: DDIM'
 tags = ["diffusion-models", "deep-learning", "generative-AI"]
 categories = ["Generative Models"]
@@ -239,7 +239,10 @@ $$
 #### 离散化迭代采样的过程为：
 
 $$
-\mathbf{x_{t-1}} = \frac{1}{ \sqrt{\alpha_t}}  \mathbf{x}_t - (\frac{\sqrt{1 - \bar{\alpha}_t}}{\sqrt{\alpha_t}} - \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2}) \cdot  \epsilon_\theta(\mathbf{x_t}, t) + \sigma_t \epsilon_t
+\begin{aligned}
+\mathbf{x_{t-1}} &= \sqrt{\bar{\alpha}_{t-1}} (\frac{1}{\sqrt{\bar{\alpha}_t}} \mathbf{x}_t - \frac{\sqrt{1 - \bar{\alpha}_t}}{\sqrt{\bar{\alpha}_t}} \cdot \epsilon_\theta(\mathbf{x_t}, t)) + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \cdot \epsilon_\theta(\mathbf{x_t}, t) + \sigma_t \epsilon_t  \\
+&= \frac{1}{ \sqrt{\alpha_t}}  \mathbf{x}_t - (\frac{\sqrt{1 - \bar{\alpha}_t}}{\sqrt{\alpha_t}} - \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2}) \cdot  \epsilon_\theta(\mathbf{x_t}, t) + \sigma_t \epsilon_t 
+\end{aligned}
 $$
 
 可以人为控制 $ \sigma_{q}^2(t)$: 
@@ -251,4 +254,47 @@ $$
 
 - 当 $ \sigma_{q}^2(t) = 0 $ 时，即 DDIM的默认形式，此时为确定性推理。
 
+### 2.2 DDIM加速采样
 
+要理解DDIM加速采样的本质，可以从2个视角分析：
+- DDPM视角：利用非马尔可夫的推广，调整了联合分布的形式，从而实现加速采样
+- ODE视角：采样过程等价逆向过程的概率流ODE的离散化，本质是数值解ODE时的取更大的步长
+
+这里主要讲前者，回顾DDPM/DDIM的推导过程引入的联合分布：
+
+$$
+\begin{aligned}
+\log p_\theta(\mathbf{x_0}) &= \log \int p_\theta(\mathbf{x_{0:T}}) d\mathbf{x_{1:T}} \quad  \\
+&= \log \int p_\theta(\mathbf{x_{0:T}}) \frac{q(\mathbf{x_{1:T}}|\mathbf{x_0})}{q(\mathbf{x_{1:T}}|\mathbf{x_0})} d\mathbf{x_{1:T}}  \\
+&= \log \int q(\mathbf{x_{1:T}}|\mathbf{x_0}) \left( \frac{p_\theta(\mathbf{x_{0:T}})}{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \right) d\mathbf{x_{1:T}}  \\
+\end{aligned}
+$$
+
+上述推导在构造联合分布的时候，引入了 $x_{1:T}$ ，因为在马尔可夫假设中，需要 step by step。
+而实现了非马尔可夫推广后，我们可以从 $ \lbrace 1,2,\dots, T \rbrace$ 中挑选一个子集进行 $ \lbrace \tau_1,\tau_2,\dots, \tau_S \rbrace$ 重新构造联合分布，令 $\tau_{0} = 0$：
+
+$$
+p_\theta(\mathbf{x_0}, \mathbf{x_{\tau_1}},\mathbf{x_{\tau_2}},\dots, \mathbf{x_{\tau_S}}) = p_\theta(\mathbf{x_{\tau_S}}) \prod_{i=1}^S p_\theta(\mathbf{x_{\tau_{i-1}}} | \mathbf{x_{\tau_i}})
+$$
+
+对于 DDIM(确定性采样, $ \sigma_{q}^2(t)=0 $)来说，训练的部分不需要做任何改动，只需要调整在推理采样步骤做一点调整：
+
+可以对比一下：
+- 未加速采样
+
+$$
+\mathbf{x_{t-1}} = \sqrt{\bar{\alpha}_{t-1}} (\frac{1}{\sqrt{\bar{\alpha}_t}} \mathbf{x}_t - \frac{\sqrt{1 - \bar{\alpha}_t}}{\sqrt{\bar{\alpha}_t}} \cdot \epsilon_\theta(\mathbf{x_t}, t)) + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \cdot \epsilon_\theta(\mathbf{x_t}, t)
+$$
+
+- 加速采样
+
+$$
+\mathbf{x}_{\tau_{i-1}} = \sqrt{\bar{\alpha}_{\tau_{i-1}}} \left( \frac{1}{\sqrt{\bar{\alpha}_{\tau_i}}} \mathbf{x}_{\tau_i} - \frac{\sqrt{1 - \bar{\alpha}_{\tau_i}}}{\sqrt{\bar{\alpha}_{\tau_i}}} \cdot \epsilon_\theta(\mathbf{x}_{\tau_i}, \tau_i) \right) + \sqrt{1 - \bar{\alpha}_{\tau_{i-1}} } \cdot \epsilon_\theta(\mathbf{x_t}, t)
+$$
+
+那么的 DDIM的推导，前向/逆向过程就都梳理完了。
+我觉得应该还留下一个疑问，就是为什么加速采样的情况下，为什么能直接使用 DDPM训练好的模型，只需要修改采样部分？这个问题我觉得站在SMLD或者ODE的视角去分析，就容易理解了。 
+
+<!-- $$
+\mathbf{x_{\tau_{i-1}}} = \sqrt{\bar{\alpha}_{\tau_{i-1}}} (\frac{1}{\sqrt{\bar{\alpha}_\tau_{i}}} \mathbf{x}_\tau_{i} - \frac{\sqrt{1 - \bar{\alpha}_\tau_{i}}}{\sqrt{\bar{\alpha}_\tau_{i}}} \cdot \epsilon_\theta(\mathbf{x_\tau_{i}}, \tau_{i})) + \sqrt{1 - \bar{\alpha}_{\tau_{i-1}} - \sigma_\tau_{i}^2} \cdot \epsilon_\tau_{i}^{''}
+$$ -->

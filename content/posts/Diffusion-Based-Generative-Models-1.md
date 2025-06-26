@@ -39,7 +39,11 @@ $$
 \end{aligned}
 $$
 
-其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度，定义 $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$。那么我们可以得到:
+其中 $ \{ \alpha_0, \dots, \alpha_T \}$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度。
+
+定义 $$\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$$ 
+
+那么我们可以得到:
 
 $$
 \begin{aligned}

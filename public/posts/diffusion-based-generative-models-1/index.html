@@ -359,7 +359,7 @@ $$<p>根据 $\mathbf{x}_1 和 \mathbf{x}_0$ 间的关系，将重建项也改写
 $$
 \begin{aligned}
 \mathbf{x}_1 &= \sqrt{\alpha_1} \mathbf{x}_0 + \sqrt{1 - \alpha_1} \epsilon_1 \\
-\mathbf{x}_0 &= \frac{1}{sqrt{\alpha_1}} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{sqrt{\alpha_1}} \epsilon_1 \\
+\mathbf{x}_0 &= \frac{1}{\sqrt{\alpha_1}} \mathbf{x}_1 - \frac{\sqrt{1 - \alpha_1}}{\sqrt{\alpha_1}} \epsilon_1 \\
 \frac{1}{2\sigma_{q}^2(1)} \| \mathbf{x_0} - \mu_\theta(\mathbf{x_1},1) \|^2 &=  \frac{1}{2\sigma_{q}^2(1)} \cdot\frac{1 - \alpha_1 }{\alpha_1} \| \epsilon_1 - \epsilon_\theta(\mathbf{x_1}, 1)\|^2 
 \end{aligned}
 $$<p>与优化形式一中一样，合并重建项，得到最终的 $\mathcal{L}_{VLB}$ 为：</p>
@@ -373,11 +373,11 @@ $$<p>容易发现，模型本质上是在学习一个噪声预测网络 $\epsilo
 <hr>
 <h3 id="algorithm-1-training">Algorithm 1 Training</h3>
 <p>1: <strong>repeat</strong><br>
-2:      $x_0 \sim q(x_0)$<br>
+2:      $\mathbf{x_0} \sim q(\mathbf{x_0})$<br>
 3:      $t \sim \text{Uniform}({1, \ldots, T})$<br>
 4:      $\epsilon \sim \mathcal{N}(0, \mathbf{I})$<br>
 5:      Take gradient descent step on<br>
-     $\nabla_\theta \left| \epsilon - \epsilon_\theta\left(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon, t \right) \right|^2$<br>
+     $\nabla_\theta \left| \epsilon - \epsilon_\theta\left(\sqrt{\bar{\alpha}_t}\mathbf{x_0} + \sqrt{1-\bar{\alpha}_t}\epsilon, t \right) \right|^2$<br>
 6: <strong>until</strong> converged</p>
 <hr>
 <h3 id="algorithm-2-sampling-inference">Algorithm 2 Sampling (Inference)</h3>

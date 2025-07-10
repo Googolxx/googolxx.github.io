@@ -326,11 +326,11 @@ Inference流程就是分解联合分布 $p_\theta(\mathbf{x_{0:T}})$，从 $p_\t
 ### Algorithm 1 Training
 
 1: **repeat**  
-2: &nbsp;&nbsp;&nbsp;&nbsp; $x_0 \sim q(x_0)$  
+2: &nbsp;&nbsp;&nbsp;&nbsp; $\mathbf{x_0} \sim q(\mathbf{x_0})$  
 3: &nbsp;&nbsp;&nbsp;&nbsp; $t \sim \text{Uniform}(\{1, \ldots, T\})$  
 4: &nbsp;&nbsp;&nbsp;&nbsp; $\epsilon \sim \mathcal{N}(0, \mathbf{I})$  
 5: &nbsp;&nbsp;&nbsp;&nbsp; Take gradient descent step on  
-&nbsp;&nbsp;&nbsp;&nbsp; $\nabla_\theta \left\| \epsilon - \epsilon_\theta\left(\sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon, t \right) \right\|^2$  
+&nbsp;&nbsp;&nbsp;&nbsp; $\nabla_\theta \left\| \epsilon - \epsilon_\theta\left(\sqrt{\bar{\alpha}_t}\mathbf{x_0} + \sqrt{1-\bar{\alpha}_t}\epsilon, t \right) \right\|^2$  
 6: **until** converged  
 
 ----

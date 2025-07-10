@@ -49,8 +49,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Categories">
-  <meta itemprop="datePublished" content="2025-06-24T20:08:36+08:00">
-  <meta itemprop="dateModified" content="2025-06-24T20:08:36+08:00">
+  <meta itemprop="datePublished" content="2025-07-10T19:28:35+08:00">
+  <meta itemprop="dateModified" content="2025-07-10T19:28:35+08:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Categories">
 
@@ -133,6 +133,31 @@
             <div class="mb3 pa4 mid-gray overflow-hidden">
     
       <div class="f6">
+        July 10, 2025
+      </div>
+    
+    <h1 class="f3 near-black">
+      <a href="/posts/diffusion-based-generative-models-3/" class="link black dim">
+        Diffusion-Based Generative Models &lt;3&gt;: SMLD
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h2 id="一-引言">一. 引言</h2>
+<p>在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。
+此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。
+本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。</p>
+<h2 id="二-相关背景介绍">二. 相关背景介绍</h2>
+<h3 id="21-一维变量的采样">2.1 一维变量的采样</h3>
+<p>考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量</p>
+<h2 id="三-smld算法框架">三. SMLD算法框架</h2>
+    </div>
+  <a href="/posts/diffusion-based-generative-models-3/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+
+        
+            <div class="mb3 pa4 mid-gray overflow-hidden">
+    
+      <div class="f6">
         June 24, 2025
       </div>
     
@@ -164,13 +189,12 @@
 <ul>
 <li>DDIM 通过重新参数化，将 DDPM 的 $T$ 步采样压缩到 $S$ 步（$S \ll T$），而保持相似的生成质量。</li>
 </ul>
-<h4 id="数学形式">数学形式</h4>
-<p>DDIM 的逆过程改写为：
-</p>
+<!-- #### 数学形式
+DDIM 的逆过程改写为：
 $$
 x_{t-1} = \sqrt{\alpha_{t-1}} \left( \frac{x_t - \sqrt{1-\alpha_t} \epsilon_\theta(x_t, t)}{\sqrt{\alpha_t}} \right) + \sqrt{1-\alpha_{t-1}} \epsilon_\theta(x_t, t)
-$$<p>
-其中 $\alpha_t$ 是噪声调度，$\epsilon_\theta$ 是去噪网络。当噪声项系数为0时，生成过程变为确定性。</p>
+$$
+其中 $\alpha_t$ 是噪声调度，$\epsilon_\theta$ 是去噪网络。当噪声项系数为0时，生成过程变为确定性。 -->
 <hr>
 <h3 id="12-sdeode视角下的ddim">1.2 SDE/ODE视角下的DDIM</h3>
 <h4 id="核心思想-1">核心思想</h4>

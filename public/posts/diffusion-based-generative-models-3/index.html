@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Diffusion-Based Generative Models &lt;3&gt;: SMLD | Renjie&#39;s log</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="一. 引言
+在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。
+此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。
+本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。
+二. 背景
+2.1 一维变量的采样
+考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：
+$$
+F(x) = p(X \leq x)
+$$然后求CDF的逆函数，并从 $[0,1]$ 均匀分布中采样, 代入到CDF的逆函数中，就能实现从分布 $ p(x)$ 中采样：
+$$
+\begin{aligned}
+u &\sim Uniform[0,1] \\
+x &= F^{-1}(u)
+\end{aligned}
+$$（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu &#43; \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）
+但对于高维变量来说，这种方法是行不通的：
+
+在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, &hellip;, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} &hellip; \int_{-\infty}^{x_d} p(t_1, t_2, &hellip;, t_d) dt_1 dt_2 &hellip; dt_d$，这个多重积分的计算复杂度随维度呈指数增长。
+即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, &hellip;, u_d)$ 的求解也极其困难，通常是没有解析解的。
+高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。
+
+2.2 Langevin Dynamics
+如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。">
+    <meta name="generator" content="Hugo 0.146.5">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+  
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/diffusion-based-generative-models-3/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/diffusion-based-generative-models-3/">
+  <meta property="og:site_name" content="Renjie&#39;s log">
+  <meta property="og:title" content="Diffusion-Based Generative Models &lt;3&gt;: SMLD">
+  <meta property="og:description" content="一. 引言 在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。 此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。 本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。
+二. 背景 2.1 一维变量的采样 考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：
+$$ F(x) = p(X \leq x) $$然后求CDF的逆函数，并从 $[0,1]$ 均匀分布中采样, 代入到CDF的逆函数中，就能实现从分布 $ p(x)$ 中采样：
+$$ \begin{aligned} u &amp;\sim Uniform[0,1] \\ x &amp;= F^{-1}(u) \end{aligned} $$（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu &#43; \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）
+但对于高维变量来说，这种方法是行不通的：
+在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, …, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} … \int_{-\infty}^{x_d} p(t_1, t_2, …, t_d) dt_1 dt_2 … dt_d$，这个多重积分的计算复杂度随维度呈指数增长。 即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, …, u_d)$ 的求解也极其困难，通常是没有解析解的。 高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。 2.2 Langevin Dynamics 如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-07-10T19:28:35+08:00">
+    <meta property="article:modified_time" content="2025-07-10T19:28:35+08:00">
+    <meta property="article:tag" content="Diffusion-Models">
+    <meta property="article:tag" content="Deep-Learning">
+    <meta property="article:tag" content="Generative-AI">
+
+  <meta itemprop="name" content="Diffusion-Based Generative Models &lt;3&gt;: SMLD">
+  <meta itemprop="description" content="一. 引言 在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。 此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。 本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。
+二. 背景 2.1 一维变量的采样 考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：
+$$ F(x) = p(X \leq x) $$然后求CDF的逆函数，并从 $[0,1]$ 均匀分布中采样, 代入到CDF的逆函数中，就能实现从分布 $ p(x)$ 中采样：
+$$ \begin{aligned} u &amp;\sim Uniform[0,1] \\ x &amp;= F^{-1}(u) \end{aligned} $$（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu &#43; \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）
+但对于高维变量来说，这种方法是行不通的：
+在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, …, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} … \int_{-\infty}^{x_d} p(t_1, t_2, …, t_d) dt_1 dt_2 … dt_d$，这个多重积分的计算复杂度随维度呈指数增长。 即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, …, u_d)$ 的求解也极其困难，通常是没有解析解的。 高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。 2.2 Langevin Dynamics 如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。">
+  <meta itemprop="datePublished" content="2025-07-10T19:28:35+08:00">
+  <meta itemprop="dateModified" content="2025-07-10T19:28:35+08:00">
+  <meta itemprop="wordCount" content="192">
+  <meta itemprop="keywords" content="Diffusion-Models,Deep-Learning,Generative-AI">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Diffusion-Based Generative Models &lt;3&gt;: SMLD">
+  <meta name="twitter:description" content="一. 引言 在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。 此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。 本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。
+二. 背景 2.1 一维变量的采样 考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：
+$$ F(x) = p(X \leq x) $$然后求CDF的逆函数，并从 $[0,1]$ 均匀分布中采样, 代入到CDF的逆函数中，就能实现从分布 $ p(x)$ 中采样：
+$$ \begin{aligned} u &amp;\sim Uniform[0,1] \\ x &amp;= F^{-1}(u) \end{aligned} $$（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu &#43; \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）
+但对于高维变量来说，这种方法是行不通的：
+在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, …, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} … \int_{-\infty}^{x_d} p(t_1, t_2, …, t_d) dt_1 dt_2 … dt_d$，这个多重积分的计算复杂度随维度呈指数增长。 即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, …, u_d)$ 的求解也极其困难，通常是没有解析解的。 高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。 2.2 Langevin Dynamics 如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。">
+
+	
+
+
+
+
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  window.MathJax  = {
+    tex: {
+        inlineMath: [['$', '$'], ['\$', '\$']], 
+        displayMath: [['$$', '$$']],
+        processEnvironments: true,
+        
+        packages: ['base', 'ams', 'noerrors', 'noundefined'],
+        tags: "ams",
+    },
+    loader:{
+        load: ['ui/safe', '[tex]/ams'], 
+    
+    },
+  };
+</script>
+
+<link rel="stylesheet" href="/css/custom.css">
+
+
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        Renjie&#39;s log
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  
+  <article class="flex-l mw8 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Diffusion-Based Generative Models &lt;3&gt;: SMLD</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-07-10T19:28:35+08:00">July 10, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h2 id="一-引言">一. 引言</h2>
+<p>在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。
+此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。
+本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。</p>
+<h2 id="二-背景">二. 背景</h2>
+<h3 id="21-一维变量的采样">2.1 一维变量的采样</h3>
+<p>考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：</p>
+$$
+F(x) = p(X \leq x)
+$$<p>然后求CDF的逆函数，并从 $[0,1]$ 均匀分布中采样, 代入到CDF的逆函数中，就能实现从分布 $ p(x)$ 中采样：</p>
+$$
+\begin{aligned}
+u &\sim Uniform[0,1] \\
+x &= F^{-1}(u)
+\end{aligned}
+$$<p>（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu + \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）</p>
+<p>但对于高维变量来说，这种方法是行不通的：</p>
+<ul>
+<li>在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, &hellip;, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} &hellip; \int_{-\infty}^{x_d} p(t_1, t_2, &hellip;, t_d) dt_1 dt_2 &hellip; dt_d$，这个多重积分的计算复杂度随维度呈指数增长。</li>
+<li>即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, &hellip;, u_d)$ 的求解也极其困难，通常是没有解析解的。</li>
+<li>高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。</li>
+</ul>
+<h3 id="22-langevin-dynamics">2.2 Langevin Dynamics</h3>
+<p>如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。</p>
+<p>为了简化表示，我们将 $\nabla_{\mathbf{x_t}} \log p(\mathbf{x_{t}})$ 记为 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$。通过梯度上升方法，可以迭代更新样本位置：</p>
+$$
+\mathbf{x_{t+1}} = \mathbf{x_{t}} + \tau \nabla_{\mathbf{x}} \log p_t(\mathbf{x})
+$$<p>其中 $\tau &gt; 0$ 是步长参数，控制每次更新的幅度。然而，这种纯梯度上升方法存在一个根本性问题：样本最终会收敛到概率密度的局部最大值点，无法实现对整个目标分布的采样。</p>
+<p>为了实现真正的从分布 $p(\mathbf{x})$ 中采样，我们需要引入朗之万动力学（Langevin Dynamics），这是一种基于马尔可夫链蒙特卡罗（MCMC）的采样方法。该方法在梯度上升的基础上添加随机噪声项：</p>
+$$
+\mathbf{x_{t+1}} = \mathbf{x_{t}} + \tau \nabla_{\mathbf{x}} \log p_t(\mathbf{x}) + \sqrt{2\tau} \mathbf{z}_t, \quad t = 0, 1, \dots, T-1
+$$<p>其中：</p>
+<ul>
+<li>$\tau$ 是步长参数，控制更新步长的大小</li>
+<li>$\mathbf{z}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ 是独立同分布的高斯噪声</li>
+<li>$T$ 是总迭代次数，决定了采样过程的长度</li>
+<li>$\sqrt{2\tau}$ 是噪声的标准差，这个特定选择确保了在 $\tau \to 0$ 时，离散时间过程收敛到连续时间的朗之万扩散过程</li>
+</ul>
+<p><strong>$\tau$ 和 $T$ 的关系</strong>：较小的 $\tau$ 值需要更大的 $T$ 值来确保采样过程充分探索目标分布。通常选择 $\tau$ 使得 $T \cdot \tau$ 保持在一个合理的范围内，既保证采样效率又确保收敛性。</p>
+<h2 id="三-smld算法框架">三. SMLD算法框架</h2>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/diffusion-models/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Diffusion-Models</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/deep-learning/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Deep-Learning</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/generative-ai/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Generative-AI</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+  <div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+    <p class="f5 b mb3">Related</p>
+    <ul class="pa0 list">
+	   
+	     <li  class="mb2">
+          <a href="/posts/diffusion-based-generative-models-2/">Diffusion-Based Generative Models &lt;2&gt;: DDIM</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/posts/diffusion-based-generative-models-1/">Diffusion-Based Generative Models &lt;1&gt;: DDPM</a>
+        </li>
+	    
+    </ul>
+</div>
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  Renjie's log 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

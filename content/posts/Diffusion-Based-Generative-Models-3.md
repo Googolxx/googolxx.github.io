@@ -67,10 +67,15 @@ $$
 对比可以发现
 
 $$
-Langevin Dynamics = gradient descent/ascent + noise
+Langevin \ Dynamics = gradient \ descent/ascent + noise
 $$
 
-梯度上升是告诉我们如何找到局部最大值点($p(\mathbf{x}的峰值)$)，而朗之万动力学告诉我们如何从 $p(\mathbf{x})$ 采样
+梯度上升是告诉我们如何找到局部最大值点($p(\mathbf{x}的峰值)$)，而朗之万动力学告诉我们如何从 $p(\mathbf{x})$ 采样。
+
+给GPT一个简单prompt，可以模拟在二维混合高斯分布上迭代Langevin Dynamic的效果:
+
+{{< figure src="/pic_diff_3/langevin_dynamics_results.png" title="">}}
+
 
 
 ## 三. SMLD算法框架

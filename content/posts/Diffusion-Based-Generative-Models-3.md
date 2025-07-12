@@ -1,6 +1,6 @@
 +++
 date = '2025-07-10T19:28:35+08:00'
-draft = true
+draft = false
 title = 'Diffusion-Based Generative Models <3>: SMLD'
 tags = ["diffusion-models", "deep-learning", "generative-AI"]
 categories = ["Generative Models"]

@@ -512,7 +512,7 @@ $$
 
 3. **Return**: $\mathbf{x_{T_L}}$
 
-**参数**
+**参数说明**：
 - $\alpha_i$ 是第 $i$ 个尺度的步长参数，$T_i$ 是第 $i$ 个尺度的迭代次数
 - NCSN中，$\alpha_i$ 通常设置为：$\alpha_i = \frac{\sigma_i^2}{\sigma_L^2} \cdot \alpha_L$
 - NCSN原文设置：$\alpha_L = 2 \times 10^{-5}$，$T_i = 100$（对所有尺度）

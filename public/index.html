@@ -49,8 +49,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Renjie&#39;s log">
-  <meta itemprop="datePublished" content="2025-07-10T19:28:35+08:00">
-  <meta itemprop="dateModified" content="2025-07-10T19:28:35+08:00">
+  <meta itemprop="datePublished" content="2025-07-13T14:45:35+08:00">
+  <meta itemprop="dateModified" content="2025-07-13T14:45:35+08:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Renjie&#39;s log">
 
@@ -140,15 +140,54 @@
       
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
+          <a href="/posts/diffusion-based-generative-models-4/" class="color-inherit dim link">
+            Diffusion-Based Generative Models &lt;4&gt;: Fokker-Planck方程
+            </a>
+        </h1>
+        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
+          <p>本部分主要介绍Fokker-Planck方程，该方程为Diffusion-Based Generative Models提供了坚实的理论基础。Fokker-Planck方程描述了随机过程中概率密度函数的演化规律，是连接随机微分方程与概率分布的重要桥梁。在扩散模型中，理解Fokker-Planck方程对于分析前向扩散过程和设计反向生成过程至关重要。</p>
+<p>本部分主要参考了<a href="https://jiming.site/archives/31/">Langevin 方程与 Fokker-Planck 方程</a></p>
+<h2 id="一-维纳wiener过程">一. 维纳（Wiener）过程</h2>
+<p>维纳过程（Wiener Process），也称为布朗运动（Brownian Motion），是随机过程理论中的基础概念，也是理解Fokker-Planck方程的重要前提。</p>
+<h3 id="11-维纳过程的定义">1.1 维纳过程的定义</h3>
+<p>为了理解维纳过程的本质，我们可以从物理现象出发。考虑一个粒子在直线上进行随机运动，这种运动可以通过离散时间步长的随机游走来建模。</p>
+<p>设粒子初始位置为 $x=0$，在每个时间步长 $\Delta t$ 内，粒子以相等的概率向左或向右移动距离 $\Delta x$。用 $X(t)$ 表示粒子在时刻 $t$ 的位置，则：</p>
+$$X(t) = \sum_{i=1}^{N} \eta_i$$<p>其中 $N = t/\Delta t$ 是时间步数，$\eta_i$ 是第 $i$ 步的位移：</p>
+$$\eta_i = \begin{cases}
++\Delta x, \text{ 概率为 } 1/2 \\
+-\Delta x, \text{ 概率为 } 1/2
+\end{cases}$$<p>当时间步数 $N$ 很大时，根据中心极限定理，$X(t)$ 的分布将趋近于正态分布。因此，我们只需要计算其均值和方差就能完全确定分布。</p>
+<p>均值的计算：</p>
+$$\mathbb{E}[X(t)] = \mathbb{E}\left[\sum_{i=1}^{N} \eta_i\right] = \sum_{i=1}^{N} \mathbb{E}[\eta_i] = N \cdot 0 = 0$$<p>方差的计算：</p>
+        </div>
+        <a href="/posts/diffusion-based-generative-models-4/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+      </div>
+    </div>
+  </div>
+</article>
+
+          </div>
+        
+          <div class="w-100 mb4 relative">
+            
+<article class="bb b--black-10">
+  <div class="db pv4 ph3 ph0-l dark-gray no-underline">
+    <div class="flex-column flex-row-ns flex">
+      
+      <div class="blah w-100">
+        <h1 class="f3 fw1 athelas mt0 lh-title">
           <a href="/posts/diffusion-based-generative-models-3/" class="color-inherit dim link">
             Diffusion-Based Generative Models &lt;3&gt;: SMLD
             </a>
         </h1>
         <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
           <h2 id="一-引言">一. 引言</h2>
-<p>在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数（score function），来指导样本生成过程。其核心思想在于利用统计物理学中的朗之万方程（Langevin equation）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。
-此时，基于得分的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。
-本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。</p>
+<p>在生成模型的研究中，基于得分（Score-based）的生成方法提供了一种从目标分布生成数据的新颖而强大的框架。与传统的生成方法不同，这类模型通过估计数据分布的梯度信息——即所谓的得分函数 (Stein&rsquo;s) score function，来指导样本生成过程。</p>
+<p>其核心思想在于利用统计物理学中的朗之万动力学（Langevin Dynamics）作为采样工具，将随机噪声逐步演化为符合目标分布的样本。</p>
+<p>尽管在一维情况下，我们可以通过反累积分布函数（CDF）的方法轻松实现采样，但在高维空间中，这种直接方法不再适用。
+此时，Score-based的方法则展现出其独特优势：它通过对概率密度的局部变化进行建模，使得生成过程能够在计算上变得可行，并赋予模型更强的表达能力和灵活性。</p>
+<p>本部分将介绍(Denosing) Score Matching，并通过 Langevin Dynamics进行采样的算法思想。
+最后给出SMLD (Score Matching with Langevin Dynamics)的算法框架。</p>
 <h2 id="二-背景">二. 背景</h2>
 <h3 id="21-一维变量的采样">2.1 一维变量的采样</h3>
 <p>考虑一种简单情况，$ x \in \mathbb{R}^1 $ 为一维变量，$ x \sim p(x)$，可以通过逆变换采样（Inverse Transform Sampling），从 $ p(x)$进行随机采样，求其累计密度函数 CDF：</p>
@@ -161,14 +200,6 @@ u &\sim Uniform[0,1] \\
 x &= F^{-1}(u)
 \end{aligned}
 $$<p>（再回想下VAE中的Reparameterization技巧，从高斯分布 $\mathcal{N}(\mu, \sigma^2)$ 中采样时，是先从标准正态分布 $\mathcal{N}(0, 1)$ 中采样得到 $\mathbf{\epsilon}$，然后通过变换 $x = \mu + \sigma \epsilon$ 得到样本。VAE采用这种技巧的主要目的是解决反向传播时梯度无法通过随机采样节点的问题）</p>
-<p>但对于高维变量来说，这种方法是行不通的：</p>
-<ul>
-<li>在高维空间中，计算累积分布函数（CDF）变得极其困难：CDF变成 $F(x_1, x_2, &hellip;, x_d) = \int_{-\infty}^{x_1} \int_{-\infty}^{x_2} &hellip; \int_{-\infty}^{x_d} p(t_1, t_2, &hellip;, t_d) dt_1 dt_2 &hellip; dt_d$，这个多重积分的计算复杂度随维度呈指数增长。</li>
-<li>即使能够计算出高维CDF，其逆函数 $F^{-1}(u_1, u_2, &hellip;, u_d)$ 的求解也极其困难，通常是没有解析解的。</li>
-<li>高维空间中数据分布的稀疏性问题，这是所有生成式模型面临的共同挑战。</li>
-</ul>
-<h3 id="22-langevin-dynamics">2.2 Langevin Dynamics</h3>
-<p>如何对高维空间的变量进行采样呢，有效地采样意味着我们希望从概率密度更高的地方进行采样，如果有 $ p(\mathbf{x})$ 的梯度，那就可以根据梯度前往高密度区域采样。等价地假设有 $ \log p(\mathbf{x})$ 的梯度 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$，这里使用 $ \nabla_{\mathbf{x}} \log p(\mathbf{x})$ 的原因是$\log p(\mathbf{x})$ 的梯度在数值上更稳定，梯度方向相同，在采样过程中，我们关心的是梯度方向，而不是梯度大小。</p>
         </div>
         <a href="/posts/diffusion-based-generative-models-3/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
       </div>
@@ -232,53 +263,18 @@ $$
 
           </div>
         
-          <div class="w-100 mb4 relative">
-            
-<article class="bb b--black-10">
-  <div class="db pv4 ph3 ph0-l dark-gray no-underline">
-    <div class="flex-column flex-row-ns flex">
-      
-      <div class="blah w-100">
-        <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/diffusion-based-generative-models-1/" class="color-inherit dim link">
-            Diffusion-Based Generative Models &lt;1&gt;: DDPM
-            </a>
-        </h1>
-        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <!-- summary = "深入解读去噪扩散概率模型 (DDPM) 的核心算法与数学推导，揭示其如何通过前向加噪与反向去噪过程实现高质量生成。" -->
-<h2 id="一-引言">一. 引言</h2>
-<p>扩散模型（<strong>Diffusion Models</strong>）作为当前生成式 AI 的核心范式，受热力学启发<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>，主要思想是迭代地加噪/去噪数据，模拟粒子扩散过程。在图像、视频生成等领域实现了非常好的效果。下文介绍核心代表作之一 <strong>DDPM</strong> <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> (Denoising Diffusion Probabilistic Models)。</p>
-<p>随着 Diffusion-Based Generative Models 理论的逐渐完善，可以从多种视角（分数匹配、 微分方程等）推导出 DDPM 的前向/逆向扩散过程、优化目标和采样过程。这里，我们将遵循 DDPM 原文的思路进行推导。</p>
-<hr>
-<h2 id="二-ddpm-算法框架">二. DDPM 算法框架</h2>
-<h3 id="1-前向扩散过程forward-diffusion-process">1. 前向扩散过程（Forward Diffusion Process）</h3>
-<p>前向扩散过程是<em><strong>无参</strong></em>的扩散过程，服从一个马尔可夫链 (Markov Chain)：马尔科夫链为状态空间中经过从一个状态到另一个状态的转换的随机过程，该过程要求具备&quot;无记忆性&quot;，即下一状态的概率分布只能由当前状态决定，在时间序列中它前面的事件均与之无关。</p>
-<p>具体来说，从一个真实数据分布采样 $\mathbf{x_0} \sim q(\mathbf{x})$，通过逐步对数据 $\mathbf{x_0}$ 添加高斯噪声（Gaussian Noise），得到被扰动的样本 $\mathbf{x_1},&hellip;\mathbf{x_t},&hellip;\mathbf{x_T}$，在 $T$ 步后接近纯噪声。得益于高斯分布的特殊数学性质，其线性组合仍然是高斯分布，因此可以将加噪过程中互相独立的高斯噪声进行合并:</p>
-$$
-\begin{aligned}
-\mathbf{x_t} &= \sqrt{\alpha_t} \mathbf{x_{t-1}} + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} \right) + \sqrt{1 - \alpha_t} \epsilon_{t-1} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \underbrace{{\sqrt{\alpha_t} \sqrt{1 - \alpha_{t-1}} \epsilon_{t-2} + \sqrt{1 - \alpha_t} \epsilon_{t-1}}}_{\text{Combine noise using linear Gaussian}} \\
-    &= \sqrt{\alpha_{t-1} \alpha_t} \mathbf{x_{t-2}} + \sqrt{1 - \alpha_{t-1} \alpha_t} \bar{\epsilon}_{t-2} \\
-    &=  ... \\
-    &= \sqrt{\bar{\alpha}_t} \mathbf{x_0} +  \sqrt{1 - \bar{\alpha}_t} \bar{\epsilon}_{t}
-\end{aligned}
-$$<p>其中 $ { \alpha_0, \dots, \alpha_T }$ 是一组人为设置的超参数，用于控制扩散过程中噪声的强度。</p>
-        </div>
-        <a href="/posts/diffusion-based-generative-models-1/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-      </div>
-    </div>
-  </div>
-</article>
-
-          </div>
-        
       </section>
 
       
         <section class="w-100">
           <h1 class="f3">More</h1>
           
+          
+            <h2 class="f5 fw4 mb4 dib mr3">
+              <a href="/posts/diffusion-based-generative-models-1/" class="link black dim">
+                Diffusion-Based Generative Models &lt;1&gt;: DDPM
+              </a>
+            </h2>
           
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/test/" class="link black dim">

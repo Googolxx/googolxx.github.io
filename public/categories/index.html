@@ -142,9 +142,20 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <p>本部分主要是对Fokker-Planck方程的介绍，Fokker-Planck方程为Diffusion-Based Generative Models提供了坚强的理论基础，
-主要参考了<a href="https://jiming.site/archives/31/">Langevin 方程与 Fokker-Planck 方程</a></p>
+      <p>本部分主要介绍Fokker-Planck方程，该方程为Diffusion-Based Generative Models提供了坚实的理论基础。Fokker-Planck方程描述了随机过程中概率密度函数的演化规律，是连接随机微分方程与概率分布的重要桥梁。在扩散模型中，理解Fokker-Planck方程对于分析前向扩散过程和设计反向生成过程至关重要。</p>
+<p>本部分主要参考了<a href="https://jiming.site/archives/31/">Langevin 方程与 Fokker-Planck 方程</a></p>
 <h2 id="一-维纳wiener过程">一. 维纳（Wiener）过程</h2>
+<p>维纳过程（Wiener Process），也称为布朗运动（Brownian Motion），是随机过程理论中的基础概念，也是理解Fokker-Planck方程的重要前提。</p>
+<h3 id="11-维纳过程的定义">1.1 维纳过程的定义</h3>
+<p>为了理解维纳过程的本质，我们可以从物理现象出发。考虑一个粒子在直线上进行随机运动，这种运动可以通过离散时间步长的随机游走来建模。</p>
+<p>设粒子初始位置为 $x=0$，在每个时间步长 $\Delta t$ 内，粒子以相等的概率向左或向右移动距离 $\Delta x$。用 $X(t)$ 表示粒子在时刻 $t$ 的位置，则：</p>
+$$X(t) = \sum_{i=1}^{N} \eta_i$$<p>其中 $N = t/\Delta t$ 是时间步数，$\eta_i$ 是第 $i$ 步的位移：</p>
+$$\eta_i = \begin{cases}
++\Delta x, \text{ 概率为 } 1/2 \\
+-\Delta x, \text{ 概率为 } 1/2
+\end{cases}$$<p>当时间步数 $N$ 很大时，根据中心极限定理，$X(t)$ 的分布将趋近于正态分布。因此，我们只需要计算其均值和方差就能完全确定分布。</p>
+<p>均值的计算：</p>
+$$\mathbb{E}[X(t)] = \mathbb{E}\left[\sum_{i=1}^{N} \eta_i\right] = \sum_{i=1}^{N} \mathbb{E}[\eta_i] = N \cdot 0 = 0$$<p>方差的计算：</p>
     </div>
   <a href="/posts/diffusion-based-generative-models-4/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>

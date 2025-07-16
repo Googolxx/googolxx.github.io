@@ -1,6 +1,6 @@
 +++
 date = '2025-07-13T14:45:35+08:00'
-draft = true
+draft = false
 title = 'Diffusion-Based Generative Models <4>: Fokker-Planck方程'
 tags = ["diffusion-models", "deep-learning", "generative-AI"]
 categories = ["Generative Models"]
@@ -147,51 +147,51 @@ $$(dW(t))^2 = \sigma^2 dt$$
 
 这一思想在Itô引理中得到了充分体现：
 
-$$d\phi(X(t)) = \phi'(X(t)) dX(t) + \frac{1}{2} \phi''(X(t)) (dX(t))^2$$
+$$d\phi(x) = \phi'(x) dx + \frac{1}{2} \phi''(x) (dx)^2$$
 
-其中 $(dX(t))^2 = g^2(X(t), t) dt$，体现了随机微积分的独特性质。
+其中 $(dx)^2 = g^2(x, t) dt$，体现了随机微积分的独特性质。
 
 #### 2.1.3 Itô引理的证明
 
-我们通过泰勒展开来证明Itô引理。对于光滑函数 $\phi(x)$，在 $X(t)$ 处进行泰勒展开：
+我们通过泰勒展开来证明Itô引理。对于光滑函数 $\phi(x)$，在 $x$ 处进行泰勒展开：
 
-$$d\phi(X(t)) = \phi'(X(t)) dX(t) + \frac{1}{2} \phi''(X(t)) (dX(t))^2 + \frac{1}{6} \phi'''(X(t)) (dX(t))^3 + \cdots$$
+$$d\phi(x) = \phi'(x) dx + \frac{1}{2} \phi''(x) (dx)^2 + \frac{1}{6} \phi'''(x) (dx)^3 + \cdots$$
 
-在普通微积分中，高阶项 $(dX(t))^3, (dX(t))^4, \ldots$ 在 $dt \to 0$ 时趋于零。但在随机微积分中，我们需要考虑维纳过程的性质。
+在普通微积分中，高阶项 $(dx)^3, (dx)^4, \ldots$ 在 $dt \to 0$ 时趋于零。但在随机微积分中，我们需要考虑维纳过程的性质。
 
-对于SDE $dX(t) = f(X(t), t) dt + g(X(t), t) dW(t)$，我们有：
+对于SDE $dx = f(x, t) dt + g(x, t) dW$，我们有：
 
 $$
 \begin{aligned}
-(dX(t))^2 &= [f(X(t), t) dt + g(X(t), t) dW(t)]^2 \\
-&= f^2(X(t), t) (dt)^2 + 2f(X(t), t)g(X(t), t) dt \cdot dW(t) + g^2(X(t), t) (dW(t))^2
+(dx)^2 &= [f(x, t) dt + g(x, t) dW]^2 \\
+&= f^2(x, t) (dt)^2 + 2f(x, t)g(x, t) dt \cdot dW + g^2(x, t) (dW)^2
 \end{aligned}
 $$
 
 根据Itô微积分的规则：
 - $(dt)^2 = 0$（高阶项）：在 $dt \to 0$ 的极限下，$(dt)^2$ 比 $dt$ 更快地趋于零，因此可以忽略
-- $dt \cdot dW(t) = 0$（不同阶项）：$dt$ 是确定性的一阶项，$dW(t)$ 是随机的一阶项，它们的乘积在期望意义下为零，且比 $dt$ 更快地趋于零
-- $(dW(t))^2 = \sigma^2 dt$（关键关系）：这是维纳过程的核心性质，体现了随机微积分与普通微积分的根本区别
+- $dt \cdot dW = 0$（不同阶项）：$dt$ 是确定性的一阶项，$dW$ 是随机的一阶项，它们的乘积在期望意义下为零，且比 $dt$ 更快地趋于零
+- $(dW)^2 = \sigma^2 dt$（关键关系）：这是维纳过程的核心性质，体现了随机微积分与普通微积分的根本区别
 
 因此：
 
-$$(dX(t))^2 = g^2(X(t), t) dt$$
+$$(dx)^2 = g^2(x, t) dt$$
 
-对于更高阶项，如 $(dX(t))^3$，它们包含 $(dt)^2$ 或更高幂次，在极限下趋于零。
+对于更高阶项，如 $(dx)^3$，它们包含 $(dt)^2$ 或更高幂次，在极限下趋于零。
 
 因此，Itô引理为：
 
-$$d\phi(X(t)) = \phi'(X(t)) dX(t) + \frac{1}{2} \phi''(X(t)) g^2(X(t), t) dt$$
+$$d\phi(x) = \phi'(x) dx + \frac{1}{2} \phi''(x) g^2(x, t) dt$$
 
 这个证明展示了为什么Itô引理中会出现二阶项，以及为什么随机微积分与普通微积分如此不同。
 
 ### 2.2 随机微分方程SDE
 
-考虑随机过程 $X(t)$ 满足随机微分方程：
+考虑随机过程 $x$ 满足随机微分方程：
 
-$$dX(t) = f(X(t), t) dt + g(X(t), t) dW(t)$$
+$$dx = f(x, t) dt + g(x, t) dW$$
 
-其中 $f(X(t), t)$ 是漂移项，$g(X(t), t)$ 是扩散项。
+其中 $f(x, t)$ 是漂移项，$g(x, t)$ 是扩散项。
 
 ### 2.3 Fokker-Planck方程
 
@@ -199,29 +199,29 @@ Fokker-Planck方程描述了随机过程中概率密度函数的演化规律。�
 
 $$\frac{\partial p_t(x)}{\partial t} = -\frac{\partial}{\partial x}[f(x,t) p_t(x)] + \frac{1}{2} \frac{\partial^2}{\partial x^2}[g^2(x,t) p_t(x)]$$
 
-其中 $p_t(x)$ 是 $X(t)$ 的概率密度函数。
+其中 $p_t(x)$ 是随机过程 $x$ 在时刻 $t$ 的概率密度函数。
 
 #### 2.3.1 Fokker-Planck方程的推导
 
-我们从SDE出发推导Fokker-Planck方程。考虑任意光滑函数 $\phi(x)$，计算 $\mathbb{E}[\phi(X(t))]$ 的时间导数：
+我们从SDE出发推导Fokker-Planck方程。考虑任意光滑函数 $\phi(x)$，计算 $\mathbb{E}[\phi(x)]$ 的时间导数：
 
-$$\frac{d}{dt}\mathbb{E}[\phi(X(t))] = \mathbb{E}\left[\frac{d}{dt}\phi(X(t))\right]$$
+$$\frac{d}{dt}\mathbb{E}[\phi(x)] = \mathbb{E}\left[\frac{d}{dt}\phi(x)\right]$$
 
 利用Itô引理：
 
-$$d\phi(X(t)) = \phi'(X(t)) dX(t) + \frac{1}{2}\phi''(X(t)) (dX(t))^2$$
+$$d\phi(x) = \phi'(x) dx + \frac{1}{2}\phi''(x) (dx)^2$$
 
-代入SDE: $dX(t) = f(X(t), t) dt + g(X(t), t) dW(t)$ 
+代入SDE: $dx = f(x, t) dt + g(x, t) dW$ 
 
-$$d\phi(X(t)) = \phi'(X(t))[f(X(t), t) dt + g(X(t), t) dW(t)] + \frac{1}{2}\phi''(X(t)) g^2(X(t), t) dt$$
+$$d\phi(x) = \phi'(x)[f(x, t) dt + g(x, t) dW] + \frac{1}{2}\phi''(x) g^2(x, t) dt$$
 
-取期望并利用 $\mathbb{E}[dW(t)] = 0$：
+取期望并利用 $\mathbb{E}[dW] = 0$：
 
-$$\frac{d}{dt}\mathbb{E}[\phi(X(t))] = \mathbb{E}[\phi'(X(t)) f(X(t), t)] + \frac{1}{2}\mathbb{E}[\phi''(X(t)) g^2(X(t), t)]$$
+$$\frac{d}{dt}\mathbb{E}[\phi(x)] = \mathbb{E}[\phi'(x) f(x, t)] + \frac{1}{2}\mathbb{E}[\phi''(x) g^2(x, t)]$$
 
 另一方面，利用概率密度函数：
 
-$$\mathbb{E}[\phi(X(t))] = \int \phi(x) p_t(x) dx$$
+$$\mathbb{E}[\phi(x)] = \int \phi(x) p_t(x) dx$$
 
 因此：
 
@@ -248,9 +248,9 @@ $$\frac{\partial p_t(x)}{\partial t} = -\frac{\partial}{\partial x}[f(x,t) p_t(x
 
 #### 2.3.3 向量形式的Fokker-Planck方程
 
-对于多维随机过程 $\mathbf{X}(t) \in \mathbb{R}^d$，满足向量SDE：
+对于多维随机过程 $\mathbf{x} \in \mathbb{R}^d$，满足向量SDE：
 
-$$d\mathbf{X}(t) = \mathbf{f}(\mathbf{X}(t), t) dt + \mathbf{G}(\mathbf{X}(t), t) d\mathbf{W}(t)$$
+$$d\mathbf{x} = \mathbf{f}(\mathbf{x}, t) dt + \mathbf{G}(\mathbf{x}, t) d\mathbf{W}$$
 
 对应的向量Fokker-Planck方程为：
 
@@ -282,107 +282,84 @@ Fokker-Planck方程不仅是一个重要的数学工具，更是理解现代扩�
 
 前向过程描述了数据从原始分布逐渐扩散到噪声分布的过程：
 
-$$d\mathbf{x}(t) = \mathbf{f}(\mathbf{x}, t) dt + g(t) d\mathbf{W}(t)$$
+$$d\mathbf{x} = \mathbf{f}(\mathbf{x}, t) dt + g(t) d\mathbf{W}$$
 
-其中：
-- $\mathbf{f}(\mathbf{x}, t)$ 是漂移项，控制数据的系统性变化
-- $g(t)$ 是扩散系数，控制随机噪声的强度
-- $d\mathbf{W}(t)$ 是维纳过程的微分，提供随机性
-
-这个SDE描述了数据点 $\mathbf{x}(t)$ 在时间 $t$ 的演化规律。随着时间推进，数据逐渐被噪声"污染"，最终收敛到噪声分布。
+其中 $\mathbf{f}(\mathbf{x}, t)$ 是漂移项，$g(t)$ 是扩散系数。随着时间推进，数据逐渐被噪声"污染"，最终收敛到噪声分布。
 
 #### 3.1.2 反向过程（Reverse Process）
 
 反向过程是前向过程的逆过程，从噪声分布生成数据：
 
-$$d\mathbf{x}(t) = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}(t)$$
+$$d\mathbf{x} = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}$$
 
-其中关键的一项是得分函数（score function）：
-$$\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$$
-
-这个函数描述了在给定时间 $t$ 和位置 $\mathbf{x}$ 时，概率密度的梯度方向。它告诉我们应该向哪个方向移动才能增加数据的概率。
-
-**重要观察**：反向过程比前向过程多了一项 $-g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$，这一项正是基于Fokker-Planck方程推导出来的修正项，确保反向过程能够正确地"逆推"前向过程。
+其中 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 是得分函数，描述了概率密度的梯度方向。反向过程比前向过程多了一项 $-g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$，这是基于Fokker-Planck方程推导出来的修正项。
 
 ### 3.2 概率流ODE（Probability Flow ODE）
 
-概率流ODE是连接SDE和ODE的重要桥梁，它消除了随机性，提供确定性的采样路径：
+概率流ODE消除了随机性，提供确定性的采样路径：
 
-$$\frac{d\mathbf{x}(t)}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$$
+$$\frac{d\mathbf{x}}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$$
 
 #### 3.2.1 概率流ODE的性质
 
-1. **概率保持**：ODE轨迹保持与前向SDE相同的概率密度演化
+1. **概率保持**：ODE轨迹保持与SDE相同的概率密度演化
 2. **确定性**：消除了随机性，提供确定性采样路径
-3. **效率提升**：相比SDE采样，ODE采样更加高效，可以用更大的步长
-4. **数值稳定性**：ODE求解器比SDE求解器更稳定
+3. **效率提升**：相比SDE采样，ODE采样更加高效
 
 #### 3.2.2 与SDE的关系
 
 概率流ODE可以通过以下方式从SDE得到：
 
-1. 从反向SDE出发：$d\mathbf{x}(t) = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}(t)$
-2. 移除随机项：$d\mathbf{x}(t) = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt$
-3. 调整系数：$\frac{d\mathbf{x}(t)}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$
+1. 从反向SDE出发：$d\mathbf{x} = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}$
+2. 移除随机项：$d\mathbf{x} = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt$
+3. 调整系数：$\frac{d\mathbf{x}}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$
 
 注意系数从 $g^2(t)$ 变为 $\frac{1}{2} g^2(t)$，这是因为ODE中不需要补偿随机项的方差。
 
-### 3.3 得分函数（Score Function）的核心作用
+### 3.3 得分函数（Score Function）
 
-得分函数 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 是连接SDE和ODE的关键，也是扩散模型的核心组件。
-
-#### 3.3.1 得分函数的含义
-
-得分函数描述了在给定时间 $t$ 和位置 $\mathbf{x}$ 时，概率密度的梯度方向：
+得分函数 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 是扩散模型的核心组件，描述了概率密度的梯度方向：
 
 $$\nabla_{\mathbf{x}} \log p_t(\mathbf{x}) = \frac{\nabla_{\mathbf{x}} p_t(\mathbf{x})}{p_t(\mathbf{x})}$$
 
-这个函数告诉我们应该向哪个方向移动才能增加数据的概率。在反向过程中，它指导我们如何从噪声中恢复出有意义的数据。
+它告诉我们应该向哪个方向移动才能增加数据的概率。
 
 #### 3.3.2 得分函数的估计
 
-在实际应用中，我们通常不知道真实的得分函数，需要通过神经网络来估计：
+在实际应用中，我们通过神经网络来估计得分函数：
 
 $$\nabla_{\mathbf{x}} \log p_t(\mathbf{x}) \approx s_\theta(\mathbf{x}, t)$$
 
-其中 $s_\theta(\mathbf{x}, t)$ 是参数为 $\theta$ 的神经网络，称为得分网络（score network）。
+其中 $s_\theta(\mathbf{x}, t)$ 是得分网络。
 
 #### 3.3.3 训练目标
 
 得分网络的训练目标是最小化得分匹配损失：
 
-$$\mathcal{L}(\theta) = \mathbb{E}_{t, \mathbf{x}(t)} \left[ \| s_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}} \log p_t(\mathbf{x}(t)) \|^2 \right]$$
-
-这个损失函数鼓励网络输出接近真实得分函数的梯度。
+$$\mathcal{L}(\theta) = \mathbb{E}_{t, \mathbf{x}} \left[ \| s_\theta(\mathbf{x}, t) - \nabla_{\mathbf{x}} \log p_t(\mathbf{x}) \|^2 \right]$$
 
 ### 3.4 扩散模型的统一理论框架
 
-基于Fokker-Planck方程，我们可以建立扩散模型的统一框架，将不同的视角整合在一起：
+基于Fokker-Planck方程，我们可以建立扩散模型的统一框架：
 
 #### 3.4.1 SDE视角
 
-- **前向SDE**：$d\mathbf{x}(t) = \mathbf{f}(\mathbf{x}, t) dt + g(t) d\mathbf{W}(t)$
-- **反向SDE**：$d\mathbf{x}(t) = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}(t)$
+- **前向SDE**：$d\mathbf{x} = \mathbf{f}(\mathbf{x}, t) dt + g(t) d\mathbf{W}$
+- **反向SDE**：$d\mathbf{x} = [\mathbf{f}(\mathbf{x}, t) - g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})] dt + g(t) d\mathbf{W}$
 
 #### 3.4.2 ODE视角
 
-- **概率流ODE**：$\frac{d\mathbf{x}(t)}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$
+- **概率流ODE**：$\frac{d\mathbf{x}}{dt} = \mathbf{f}(\mathbf{x}, t) - \frac{1}{2} g^2(t) \nabla_{\mathbf{x}} \log p_t(\mathbf{x})$
 
-#### 3.4.3 概率视角
+#### 3.4.3 概率流视角
 
 - **Fokker-Planck方程**：$\frac{\partial p_t(\mathbf{x})}{\partial t} = -\nabla \cdot [\mathbf{f}(\mathbf{x}, t) p_t(\mathbf{x})] + \frac{1}{2} \nabla \cdot [g^2(t) \nabla p_t(\mathbf{x})]$
 
-#### 3.4.4 三个视角的统一
-
-这三个视角通过得分函数 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 紧密联系在一起：
-
-1. **SDE → ODE**：通过移除随机项和调整系数
-2. **SDE → Fokker-Planck**：通过Itô引理和期望计算
-3. **Fokker-Planck → 得分函数**：通过概率密度的梯度
-
+这三个视角通过得分函数 $\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 紧密联系在一起。
+<!-- 
 ### 3.5 现代扩散模型的应用
 
-这个统一框架为理解现代扩散模型提供了坚实的理论基础：
+这个统一框架为理解现代扩散模型提供了理论基础：
 
 #### 3.5.1 DDPM（Denoising Diffusion Probabilistic Models）
 
@@ -401,14 +378,7 @@ Score SDE直接基于反向SDE进行采样，是框架的完整实现。
 
 ### 3.6 总结
 
-Fokker-Planck方程为扩散模型提供了：
-
-1. **理论基础**：将随机过程理论与生成模型联系起来
-2. **统一框架**：SDE、ODE、概率三种视角的统一
-3. **实用工具**：为现代扩散模型的设计和实现提供指导
-4. **数学严谨性**：确保理论推导的正确性和一致性
-
-这种统一框架不仅帮助我们理解现有的扩散模型，也为设计新的生成模型提供了清晰的思路和工具。
+Fokker-Planck方程为扩散模型提供了理论基础、统一框架和实用工具，将随机过程理论与生成模型联系起来。 -->
 
 
 

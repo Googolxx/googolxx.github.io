@@ -9,11 +9,11 @@
     <lastBuildDate>Tue, 15 Jul 2025 21:20:39 +0800</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Diffusion Based Generative Models 5</title>
+      <title>Diffusion-Based Generative Models &lt;5&gt;: SDE/ODE视角下的扩散模型</title>
       <link>http://localhost:1313/posts/diffusion-based-generative-models-5/</link>
       <pubDate>Tue, 15 Jul 2025 21:20:39 +0800</pubDate>
       <guid>http://localhost:1313/posts/diffusion-based-generative-models-5/</guid>
-      <description></description>
+      <description>&lt;h2 id=&#34;一-sdeode&#34;&gt;一. SDE/ODE&lt;/h2&gt;&#xA;&lt;p&gt;在前面的章节中，我们详细讨论了扩散模型的概率论基础，包括维纳过程、Itô积分、随机微分方程和Fokker-Planck方程。现在我们将这些理论工具应用到扩散模型中，从SDE/ODE的视角来理解扩散过程。&lt;/p&gt;&#xA;&lt;p&gt;扩散模型的核心思想是将数据分布通过前向过程逐渐转换为噪声分布，然后学习反向过程从噪声恢复数据。这个过程可以用随机微分方程（SDE）来描述，而对应的确定性过程可以用常微分方程（ODE）来描述。&lt;/p&gt;&#xA;&lt;h3 id=&#34;11-基本形式&#34;&gt;1.1 基本形式&lt;/h3&gt;&#xA;&lt;!-- 考虑向量形式的ODE：&#xA;&#xA;$$&#xA;d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt&#xA;$$ --&gt;&#xA;&lt;p&gt;考虑一个向量形式的SDE：&lt;/p&gt;&#xA;$$&#xA;d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t) d\mathbf{W}&#xA;$$&lt;p&gt;其中 $\mathbf{x} \in \mathbb{R}^d$，$\mathbf{f}: \mathbb{R}^d \times [0, T] \to \mathbb{R}^d$ 是漂移函数，$\mathbf{G}: [0, T] \to \mathbb{R}^{d \times d}$ 是扩散矩阵，$\mathbf{W}$ 是 $d$ 维维纳过程。&lt;/p&gt;&#xA;&lt;h3 id=&#34;12-逆向sde&#34;&gt;1.2 逆向SDE&lt;/h3&gt;&#xA;&lt;p&gt;对于前向SDE：&lt;/p&gt;&#xA;$$&#xA;d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t) d\mathbf{W}&#xA;$$&lt;p&gt;其逆向SDE为（逆向SDE的推导基于Girsanov定理和Fokker-Planck方程）：&lt;/p&gt;&#xA;$$&#xA;d\mathbf{x} = \left[\mathbf{f}(\mathbf{x}, t) - \mathbf{G}(t)\mathbf{G}(t)^T \nabla_{\mathbf{x}} \log p_t(\mathbf{x})\right]dt + \mathbf{G}(t) d\bar{\mathbf{W}}&#xA;$$&lt;p&gt;其中 $\bar{\mathbf{W}}$ 是逆向时间维纳过程，$\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 是时间 $t$ 时刻状态 $\mathbf{x}$ 的对数概率密度梯度。&lt;/p&gt;</description>
     </item>
     <item>
       <title>Diffusion-Based Generative Models &lt;4&gt;: Fokker-Planck方程</title>

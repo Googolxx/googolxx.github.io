@@ -2,7 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/categories/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/deep-learning/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/posts/diffusion-based-generative-models-5/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/diffusion-models/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/categories/generative-models/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/generative-ai/</loc>
     <lastmod>2025-07-15T21:20:39+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/</loc>
@@ -11,25 +26,10 @@
     <loc>http://localhost:1313/</loc>
     <lastmod>2025-07-15T21:20:39+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/deep-learning/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
+    <loc>http://localhost:1313/tags/</loc>
+    <lastmod>2025-07-15T21:20:39+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/diffusion-based-generative-models-4/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/diffusion-models/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/generative-models/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/generative-ai/</loc>
-    <lastmod>2025-07-13T14:45:35+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/</loc>
     <lastmod>2025-07-13T14:45:35+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/diffusion-based-generative-models-3/</loc>

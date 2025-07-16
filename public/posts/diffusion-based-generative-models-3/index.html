@@ -480,7 +480,7 @@ $$<div style="color: red;">
 <p>综上，DSM不仅为下文的SMLD方法提供了理论基础，也与后续基于ODE/SDE的Diffusion Model及Flow Matching等生成模型方法密切相关。</p>
 <h2 id="三-smld算法框架">三. SMLD算法框架</h2>
 <p>有了上面的铺垫，介绍SMLD(Score Matching with Langevin Dynamics)的算法框架就变得清晰了。
-SMLD的核心思想包含两个关键步骤：</p>
+这里主要介绍SMLD的具体实现方法：NCSN（Noise Conditioned Score Network），核心思想包含两个关键点：</p>
 <ol>
 <li>
 <p><strong>多尺度噪声扰动</strong>：使用不同尺度的噪声 ${\sigma_1, \sigma_2, &hellip;, \sigma_L}$ 对数据进行扰动，其中 $\sigma_1 &gt; \sigma_2 &gt; &hellip; &gt; \sigma_L$。较大尺度的噪声能够更好地填充高维数据稀疏区域，而较小尺度的噪声则能更好地逼近真实数据分布 $p_0(\mathbf{x})$。</p>
@@ -501,7 +501,7 @@ $$
 \begin{aligned}
 \mathcal{L}_{DSM_{\sigma_i}}(\theta) &= \frac{1}{2} \mathbb{E}_{p_{\sigma_i}(\mathbf{x}, \tilde{\mathbf{x}})} \left[ \| s_\theta(\tilde{\mathbf{x}}, \sigma_i) + \frac{\mathbf{z}}{\sigma_i} \|_2^2 \right] \\
 \end{aligned}
-$$<p>考虑到多个噪声尺度 ${\sigma_1, \sigma_2, &hellip;, \sigma_L}$，也就是NCSN（noise conditioned score network）中，对应目标函数为：</p>
+$$<p>考虑到多个噪声尺度 ${\sigma_1, \sigma_2, &hellip;, \sigma_L}$，也就是NCSN中，对应目标函数为：</p>
 $$
 \begin{aligned}
 \mathcal{L}_{NCSN}(\theta) &= \frac{1}{L} \sum_{i=1}^{L} \lambda_i \mathcal{L}_{DSM_{\sigma_i}}(\theta) \\

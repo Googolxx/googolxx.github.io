@@ -141,11 +141,31 @@
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
           <a href="/posts/diffusion-based-generative-models-5/" class="color-inherit dim link">
-            Diffusion Based Generative Models 5
+            Diffusion-Based Generative Models &lt;5&gt;: SDE/ODE视角下的扩散模型
             </a>
         </h1>
         <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          
+          <h2 id="一-sdeode">一. SDE/ODE</h2>
+<p>在前面的章节中，我们详细讨论了扩散模型的概率论基础，包括维纳过程、Itô积分、随机微分方程和Fokker-Planck方程。现在我们将这些理论工具应用到扩散模型中，从SDE/ODE的视角来理解扩散过程。</p>
+<p>扩散模型的核心思想是将数据分布通过前向过程逐渐转换为噪声分布，然后学习反向过程从噪声恢复数据。这个过程可以用随机微分方程（SDE）来描述，而对应的确定性过程可以用常微分方程（ODE）来描述。</p>
+<h3 id="11-基本形式">1.1 基本形式</h3>
+<!-- 考虑向量形式的ODE：
+
+$$
+d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt
+$$ -->
+<p>考虑一个向量形式的SDE：</p>
+$$
+d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t) d\mathbf{W}
+$$<p>其中 $\mathbf{x} \in \mathbb{R}^d$，$\mathbf{f}: \mathbb{R}^d \times [0, T] \to \mathbb{R}^d$ 是漂移函数，$\mathbf{G}: [0, T] \to \mathbb{R}^{d \times d}$ 是扩散矩阵，$\mathbf{W}$ 是 $d$ 维维纳过程。</p>
+<h3 id="12-逆向sde">1.2 逆向SDE</h3>
+<p>对于前向SDE：</p>
+$$
+d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t) d\mathbf{W}
+$$<p>其逆向SDE为（逆向SDE的推导基于Girsanov定理和Fokker-Planck方程）：</p>
+$$
+d\mathbf{x} = \left[\mathbf{f}(\mathbf{x}, t) - \mathbf{G}(t)\mathbf{G}(t)^T \nabla_{\mathbf{x}} \log p_t(\mathbf{x})\right]dt + \mathbf{G}(t) d\bar{\mathbf{W}}
+$$<p>其中 $\bar{\mathbf{W}}$ 是逆向时间维纳过程，$\nabla_{\mathbf{x}} \log p_t(\mathbf{x})$ 是时间 $t$ 时刻状态 $\mathbf{x}$ 的对数概率密度梯度。</p>
         </div>
         <a href="/posts/diffusion-based-generative-models-5/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
       </div>

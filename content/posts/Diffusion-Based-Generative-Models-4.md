@@ -51,7 +51,7 @@ $$\text{Var}[X(t)] = \mathbb{E}[X(t)^2] = \mathbb{E}\left[\left(\sum_{i=1}^{N} \
 3. **正态分布**：对于 $s < t$，增量 $W(t) - W(s) \sim \mathcal{N}(0, \sigma^2(t-s))$
 4. **连续路径**：$W(t)$ 的样本路径几乎必然连续
 
-当 $\sigma = 1$ 时，我们得到标准维纳过程（Standard Wiener Process），记为 $B(t)$。标准维纳过程满足：
+当 $\sigma = 1$ 时，我们得到标准维纳过程（Standard Wiener Process），记为 $B(t)$。标准维纳过程满足，为了简化表述，以下的维纳过程 $W(t) $ 默认为标准维纳过程：
 
 $$B(t) \sim \mathcal{N}(0, t)$$
 
@@ -66,9 +66,9 @@ $$B(t) \sim \mathcal{N}(0, t)$$
 
 **均值函数**：$\mathbb{E}[W(t)] = 0$
 
-**方差函数**：$\text{Var}[W(t)] = \sigma^2 t$
+**方差函数**：$\text{Var}[W(t)] = t$
 
-**自相关函数**：对于 $s \leq t$，$R_W(s,t) = \sigma^2 \min(s,t)$
+**自相关函数**：对于 $s \leq t$，$R_W(s,t) = \min(s,t)$
 
 ### 1.3 白噪声/维纳过程的微分形式
 
@@ -124,26 +124,26 @@ $$
 
 **性质2：等距性**
 
-$$\mathbb{E}\left[\left(\int_0^t f(s) dW(s)\right)^2\right] = \sigma^2 \int_0^t f^2(s) ds$$
+$$\mathbb{E}\left[\left(\int_0^t f(s) dW(s)\right)^2\right] = \int_0^t f^2(s) ds$$
 
 **推导**：
 $$\begin{aligned}
 \mathbb{E}\left[\left(\int_0^t f(s) dW(s)\right)^2\right] &= \mathbb{E}\left[\left(\lim_{n \to \infty} \sum_{i=1}^n f(t_{i-1}) [W(t_i) - W(t_{i-1})]\right)^2\right] \\
 &= \lim_{n \to \infty} \mathbb{E}\left[\sum_{i=1}^n f^2(t_{i-1}) [W(t_i) - W(t_{i-1})]^2\right] \\
 &= \lim_{n \to \infty} \sum_{i=1}^n f^2(t_{i-1}) \mathbb{E}[W(t_i) - W(t_{i-1})]^2 \\
-&= \lim_{n \to \infty} \sum_{i=1}^n f^2(t_{i-1}) \sigma^2(t_i - t_{i-1}) \\
-&= \sigma^2 \int_0^t f^2(s) ds
+&= \lim_{n \to \infty} \sum_{i=1}^n f^2(t_{i-1}) (t_i - t_{i-1}) \\
+&= \int_0^t f^2(s) ds
 \end{aligned}$$
 
-其中利用了维纳过程增量的方差：$\mathbb{E}[W(t_i) - W(t_{i-1})]^2 = \sigma^2(t_i - t_{i-1})$，以及不同区间增量的独立性。
+其中利用了维纳过程增量的方差：$\mathbb{E}[W(t_i) - W(t_{i-1})]^2 = (t_i - t_{i-1})$，以及不同区间增量的独立性。
 
 #### 2.1.2 Itô微积分的核心思想
 
 Itô微积分与普通微积分的根本区别在于对二阶项的处理。在普通微积分中，高阶项（如 $(dt)^2$）在极限下趋于零，可以忽略。但在随机微积分中，维纳过程的二阶项与时间的一阶项同阶：
 
-$$(dW(t))^2 = \sigma^2 dt$$
+$$(dW(t))^2 = dt$$
 
-这个关系是Itô微积分的核心。Itô微积分的思想便是保持式中的二阶项 $(dW)^2$，并将其记为一阶项 $\sigma^2 dt$。
+这个关系是Itô微积分的核心。Itô微积分的思想便是保持式中的二阶项 $(dW)^2$，并将其记为一阶项 $dt$。
 
 这一思想在Itô引理中得到了充分体现：
 
@@ -171,7 +171,7 @@ $$
 根据Itô微积分的规则：
 - $(dt)^2 = 0$（高阶项）：在 $dt \to 0$ 的极限下，$(dt)^2$ 比 $dt$ 更快地趋于零，因此可以忽略
 - $dt \cdot dW = 0$（不同阶项）：$dt$ 是确定性的一阶项，$dW$ 是随机的一阶项，它们的乘积在期望意义下为零，且比 $dt$ 更快地趋于零
-- $(dW)^2 = \sigma^2 dt$（关键关系）：这是维纳过程的核心性质，体现了随机微积分与普通微积分的根本区别
+- $(dW)^2 = dt$（关键关系）：这是维纳过程的核心性质，体现了随机微积分与普通微积分的根本区别
 
 因此：
 

@@ -149,22 +149,68 @@ $$d\mathbf{x} = \frac{1}{t} \mathbf{x} dt + \mathbf{A} d\bar{\mathbf{W}}$$
 
 ## 二. SDE/ODE数值求解
 
+SDE/ODE大部分情况下很难求解析解，通常用数值解近似。
+
 ### 2.1 基本方法
 
 #### 2.1.1 ODE求解
 
-对于 $\frac{d\mathbf{x}}{dt} = \mathbf{f}(\mathbf{x}, t)$：
+对于一个ODE方程: 
 
-**欧拉方法**：
+$$
+d\mathbf{x} = \mathbf{f}(\mathbf{x}, t) dt
+$$
 
-$$\mathbf{x}_{i+1} = \mathbf{x}_i + h \mathbf{f}(\mathbf{x}_i, t_i)$$
+**欧拉法（Euler Method）**：
 
-**收敛性分析**：
-- 局部截断误差：$O(h^2)$
-- 全局截断误差：$O(h)$
-- 稳定性：条件稳定，步长需要足够小
+$$\mathbf{x}_{i+1} = \mathbf{x}_i + h \mathbf{f}(\mathbf{x}_i, t_i), \quad i = 0, 1, \ldots, N-1$$
 
-**RK4方法**：
+
+- $h$ 为步长（step size），$h = \frac{T}{N}$，$T$ 为总时间，$N$ 为步数
+- **局部截断误差**：$O(h^2)$
+- **全局截断误差**：$O(h)$
+
+**误差推导**：
+
+1. **局部截断误差**：
+   对于精确解 $\mathbf{x}(t)$，在 $t_i$ 处的泰勒展开：
+   $$\mathbf{x}(t_i + h) = \mathbf{x}(t_i) + h \mathbf{x}'(t_i) + \frac{h^2}{2} \mathbf{x}''(t_i) + \frac{h^3}{6} \mathbf{x}'''(t_i) + \cdots + \frac{h^n}{n!} \mathbf{x}^{(n)}(\xi_i)$$
+   其中 $\xi_i \in (t_i, t_i + h)$。
+
+   欧拉方法只使用了前两项：$\mathbf{x}(t_i) + h \mathbf{x}'(t_i)$，因此局部截断误差为：
+   $$\tau_i = \mathbf{x}(t_i + h) - \mathbf{x}_{i+1} = \frac{h^2}{2} \mathbf{x}''(t_i) + \frac{h^3}{6} \mathbf{x}'''(t_i) + \cdots = O(h^2)$$
+   
+2. **全局截断误差**：
+   假设 $\mathbf{f}$ 满足Lipschitz条件：$\|\mathbf{f}(\mathbf{x}, t) - \mathbf{f}(\mathbf{y}, t)\| \leq L\|\mathbf{x} - \mathbf{y}\|$
+   
+   全局误差满足：
+   $$\|\mathbf{e}_{i+1}\| \leq (1 + hL)\|\mathbf{e}_i\| + \|\tau_i\|$$
+   
+   **递推过程**：
+   - 第1步：$\|\mathbf{e}_1\| \leq \|\tau_0\|$
+   - 第2步：$\|\mathbf{e}_2\| \leq (1 + hL)\|\tau_0\| + \|\tau_1\|$
+   - 第n步：
+
+   $$\|\mathbf{e}_n \| \leq \sum_{i=0}^{n-1} (1 + hL)^{n-1-i}\|\tau_i\|$$
+   
+   假设 $\|\tau_i\| \leq M$，利用几何级数求和：
+   $$\|\mathbf{e}_n\| \leq M \frac{(1 + hL)^n - 1}{hL}$$
+   
+   当 $h \to 0$ 时，$(1 + hL)^{T/h} \to e^{LT}$，因此：
+   $$\|\mathbf{e}_n\| \leq \frac{M}{L}(e^{LT} - 1)h = O(h)$$
+   其中 $M = \max_i \|\tau_i\|/h^2$。
+
+<!-- 欧拉法的误差传播：
+第i步的误差 = 第(i-1)步的误差 + 函数差异 + 局部截断误差
+Lipschitz条件告诉我们：
+函数差异 ≤ L × 前一步误差
+因此：
+第i步误差 ≤ (1 + hL) × 第(i-1)步误差 + 局部误差 -->
+
+**Runge-Kutta Method: RK4**
+
+RK4是四阶显式Runge-Kutta法，具有高精度和良好的稳定性：
+
 $$\begin{aligned}
 \mathbf{k}_1 &= \mathbf{f}(\mathbf{x}_i, t_i) \\
 \mathbf{k}_2 &= \mathbf{f}(\mathbf{x}_i + \frac{h}{2}\mathbf{k}_1, t_i + \frac{h}{2}) \\
@@ -173,30 +219,71 @@ $$\begin{aligned}
 \mathbf{x}_{i+1} &= \mathbf{x}_i + \frac{h}{6}(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)
 \end{aligned}$$
 
-**收敛性分析**：
-- 局部截断误差：$O(h^5)$
-- 全局截断误差：$O(h^4)$
-- 稳定性：更好的稳定性，适合刚性ODE
+- **局部截断误差**：$O(h^5)$
+- **全局截断误差**：$O(h^4)$
+- **精度&计算复杂度**：4阶精度。更高的复杂度，每步需要4次函数评估
 
-**自适应步长方法**：
-$$h_{i+1} = h_i \left(\frac{\text{tol}}{\text{error}_i}\right)^{1/p}$$
+<!-- 1. **局部截断误差**：
+   RK4方法的局部截断误差为 $O(h^5)$。这是因为RK4方法通过精心设计的4个函数评估点，构造了一个四阶精度的数值积分公式。
+   
+   对于线性测试方程 $\frac{dx}{dt} = \lambda x$，RK4方法的局部截断误差为：
+   $$\tau_i = \frac{h^5}{120} \lambda^5 x(t_i) + O(h^6)$$
+   
+   这证明了RK4方法具有四阶精度。
 
-其中 $\text{tol}$ 是容差，$p$ 是方法的阶数。
+2. **全局截断误差**：
+   类似欧拉方法的分析，通过误差传播理论可以证明全局误差为 $O(h^4)$。 -->
+
+<!-- 3. **稳定性分析**：
+   对于线性测试方程 $\frac{dx}{dt} = \lambda x$，RK4方法的递推公式为：
+   $$x_{i+1} = \left(1 + h\lambda + \frac{(h\lambda)^2}{2} + \frac{(h\lambda)^3}{6} + \frac{(h\lambda)^4}{24}\right)x_i = R(h\lambda) x_i$$
+   
+   其中 $R(z) = 1 + z + \frac{z^2}{2} + \frac{z^3}{6} + \frac{z^4}{24}$ 是RK4方法的稳定性函数。
+   
+   稳定性条件：$|R(h\lambda)| \leq 1$。RK4方法的稳定区域比欧拉方法大得多，能够处理更大范围的 $\lambda$ 值，特别是对于刚性ODE。 -->
+
 
 #### 2.1.2 SDE求解
 
-对于 $d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t)d\mathbf{W}$：
+对于一个SDE方程
 
-**欧拉-丸山方法**：
+$$
+d\mathbf{x} = \mathbf{f}(\mathbf{x}, t)dt + \mathbf{G}(t)d\mathbf{W}
+$$
+
+**欧拉-丸山法（Euler-Maruyama Method）**：
+
 $$\mathbf{x}_{i+1} = \mathbf{x}_i + \mathbf{f}(\mathbf{x}_i, t_i)h + \mathbf{G}(t_i)\Delta\mathbf{W}_i$$
 
-其中 $\Delta\mathbf{W}_i = \mathbf{W}(t_{i+1}) - \mathbf{W}(t_i) \sim \mathcal{N}(\mathbf{0}, h\mathbf{I})$。
+其中 
+$$\Delta\mathbf{W}_i = \mathbf{W}(t_{i+1}) - \mathbf{W}(t_i) \sim \mathcal{N}(\mathbf{0}, h\mathbf{I})$$。
 
 **收敛性分析**：
 - 强收敛阶：$O(h^{1/2})$（路径wise收敛）
 - 弱收敛阶：$O(h)$（分布收敛）
 - 优点：简单易实现
 - 缺点：收敛阶较低
+
+**详细推导**：
+
+1. **强收敛性**：
+   强收敛定义为：$\mathbb{E}[\|\mathbf{x}(T) - \mathbf{x}_N\|] \leq Ch^p$
+   
+   对于欧拉-丸山方法，局部误差为：
+   $$\|\mathbf{x}(t_{i+1}) - \mathbf{x}_{i+1}\| = O(h^{3/2})$$
+   
+   全局误差通过递推得到：
+   $$\mathbb{E}[\|\mathbf{x}(T) - \mathbf{x}_N\|] = O(h^{1/2})$$
+
+2. **弱收敛性**：
+   弱收敛定义为：$|\mathbb{E}[g(\mathbf{x}(T))] - \mathbb{E}[g(\mathbf{x}_N)]| \leq Ch^p$
+   
+   对于欧拉-丸山方法，弱收敛阶为 $O(h)$。
+
+3. **误差来源**：
+   - **截断误差**：$O(h^2)$
+   - **随机误差**：$O(h^{1/2})$
+   - **总误差**：$O(h^{1/2})$
 
 **米尔斯坦方法**：
 $$\mathbf{x}_{i+1} = \mathbf{x}_i + \mathbf{f}(\mathbf{x}_i, t_i)h + \mathbf{G}(t_i)\Delta\mathbf{W}_i + \frac{1}{2}\mathbf{G}(t_i)\mathbf{G}(t_i)^T[(\Delta\mathbf{W}_i)^2 - h]$$
@@ -207,12 +294,190 @@ $$\mathbf{x}_{i+1} = \mathbf{x}_i + \mathbf{f}(\mathbf{x}_i, t_i)h + \mathbf{G}(
 - 优点：更高的收敛阶
 - 缺点：需要计算二阶项，计算复杂度更高
 
+**详细推导**：
+
+1. **Itô-Taylor展开**：
+   米尔斯坦方法基于Itô-Taylor展开到二阶项：
+   $$\mathbf{x}(t_{i+1}) = \mathbf{x}(t_i) + \mathbf{f}(\mathbf{x}(t_i), t_i)h + \mathbf{G}(t_i)\Delta\mathbf{W}_i + \frac{1}{2}\mathbf{G}(t_i)\mathbf{G}(t_i)^T[(\Delta\mathbf{W}_i)^2 - h] + O(h^{3/2})$$
+
+2. **收敛性分析**：
+   - 局部误差：$O(h^{3/2})$
+   - 强收敛阶：$O(h)$
+   - 弱收敛阶：$O(h)$
+
+3. **二阶项计算**：
+   对于标量SDE，$(\Delta W_i)^2 - h$ 项直接计算。
+   对于向量SDE，需要考虑交叉项。
+
 **随机龙格库塔方法**：
 $$\begin{aligned}
 \mathbf{K}_1 &= \mathbf{f}(\mathbf{x}_i, t_i)h + \mathbf{G}(t_i)\Delta\mathbf{W}_i \\
 \mathbf{K}_2 &= \mathbf{f}(\mathbf{x}_i + \mathbf{K}_1, t_{i+1})h + \mathbf{G}(t_{i+1})\Delta\mathbf{W}_i \\
 \mathbf{x}_{i+1} &= \mathbf{x}_i + \frac{1}{2}(\mathbf{K}_1 + \mathbf{K}_2)
 \end{aligned}$$
+
+**数值实现示例**：
+
+```python
+def euler_maruyama(f, G, x0, t_span, h, n_paths=1):
+    """欧拉-丸山方法求解SDE"""
+    t = np.arange(t_span[0], t_span[1] + h, h)
+    n = len(t)
+    x = np.zeros((n_paths, n, len(x0)))
+    x[:, 0, :] = x0
+    
+    for i in range(n-1):
+        # 生成维纳过程增量
+        dW = np.sqrt(h) * np.random.randn(n_paths, len(x0))
+        
+        # 欧拉-丸山更新
+        drift = f(x[:, i, :], t[i]) * h
+        diffusion = G(t[i]) * dW
+        
+        x[:, i+1, :] = x[:, i, :] + drift + diffusion
+    
+    return t, x
+
+def milstein_method(f, G, dG_dx, x0, t_span, h, n_paths=1):
+    """米尔斯坦方法求解SDE"""
+    t = np.arange(t_span[0], t_span[1] + h, h)
+    n = len(t)
+    x = np.zeros((n_paths, n, len(x0)))
+    x[:, 0, :] = x0
+    
+    for i in range(n-1):
+        # 生成维纳过程增量
+        dW = np.sqrt(h) * np.random.randn(n_paths, len(x0))
+        
+        # 欧拉-丸山项
+        drift = f(x[:, i, :], t[i]) * h
+        diffusion = G(t[i]) * dW
+        
+        # 米尔斯坦修正项
+        correction = 0.5 * G(t[i]) * dG_dx(x[:, i, :], t[i]) * (dW**2 - h)
+        
+        x[:, i+1, :] = x[:, i, :] + drift + diffusion + correction
+    
+    return t, x
+
+def stochastic_rk4(f, G, x0, t_span, h, n_paths=1):
+    """随机龙格库塔方法"""
+    t = np.arange(t_span[0], t_span[1] + h, h)
+    n = len(t)
+    x = np.zeros((n_paths, n, len(x0)))
+    x[:, 0, :] = x0
+    
+    for i in range(n-1):
+        dW = np.sqrt(h) * np.random.randn(n_paths, len(x0))
+        
+        # RK4步骤
+        K1 = f(x[:, i, :], t[i]) * h + G(t[i]) * dW
+        K2 = f(x[:, i, :] + K1, t[i+1]) * h + G(t[i+1]) * dW
+        
+        x[:, i+1, :] = x[:, i, :] + 0.5 * (K1 + K2)
+    
+    return t, x
+
+# 测试SDE
+def test_sde_f(x, t):
+    """测试SDE的漂移函数: f(x,t) = -x"""
+    return -x
+
+def test_sde_G(t):
+    """测试SDE的扩散函数: G(t) = 1"""
+    return 1.0
+
+def test_sde_dG_dx(x, t):
+    """测试SDE的扩散函数导数"""
+    return 0.0
+
+# 比较不同方法
+x0 = 1.0
+t_span = (0, 2)
+h = 0.01
+n_paths = 1000
+
+# 使用不同方法求解
+t_euler, x_euler = euler_maruyama(test_sde_f, test_sde_G, x0, t_span, h, n_paths)
+t_milstein, x_milstein = milstein_method(test_sde_f, test_sde_G, test_sde_dG_dx, x0, t_span, h, n_paths)
+t_rk4, x_rk4 = stochastic_rk4(test_sde_f, test_sde_G, x0, t_span, h, n_paths)
+
+# 计算统计量
+mean_euler = np.mean(x_euler, axis=0)
+var_euler = np.var(x_euler, axis=0)
+mean_milstein = np.mean(x_milstein, axis=0)
+var_milstein = np.var(x_milstein, axis=0)
+mean_rk4 = np.mean(x_rk4, axis=0)
+var_rk4 = np.var(x_rk4, axis=0)
+
+print(f"Euler方法 - 最终均值: {mean_euler[-1]:.6f}, 最终方差: {var_euler[-1]:.6f}")
+print(f"Milstein方法 - 最终均值: {mean_milstein[-1]:.6f}, 最终方差: {var_milstein[-1]:.6f}")
+print(f"RK4方法 - 最终均值: {mean_rk4[-1]:.6f}, 最终方差: {var_rk4[-1]:.6f}")
+```
+
+**收敛性研究**：
+
+```python
+def sde_convergence_study():
+    """SDE方法收敛性研究"""
+    h_values = [0.1, 0.05, 0.025, 0.0125]
+    n_paths = 1000
+    t_span = (0, 1)
+    
+    errors_euler = []
+    errors_milstein = []
+    
+    for h in h_values:
+        # 使用较小步长作为参考解
+        h_ref = h / 4
+        t_ref, x_ref = euler_maruyama(test_sde_f, test_sde_G, x0, t_span, h_ref, n_paths)
+        
+        # 使用当前步长
+        t, x_euler = euler_maruyama(test_sde_f, test_sde_G, x0, t_span, h, n_paths)
+        t, x_milstein = milstein_method(test_sde_f, test_sde_G, test_sde_dG_dx, x0, t_span, h, n_paths)
+        
+        # 计算误差（在相同时间点）
+        indices = np.arange(0, len(t_ref), 4)
+        error_euler = np.mean(np.abs(x_euler[:, -1, :] - x_ref[:, indices[-1], :]))
+        error_milstein = np.mean(np.abs(x_milstein[:, -1, :] - x_ref[:, indices[-1], :]))
+        
+        errors_euler.append(error_euler)
+        errors_milstein.append(error_milstein)
+    
+    # 计算收敛阶数
+    for i in range(1, len(h_values)):
+        order_euler = np.log(errors_euler[i-1] / errors_euler[i]) / np.log(2)
+        order_milstein = np.log(errors_milstein[i-1] / errors_milstein[i]) / np.log(2)
+        print(f"h = {h_values[i]:.4f}: Euler阶数 = {order_euler:.2f}, Milstein阶数 = {order_milstein:.2f}")
+
+sde_convergence_study()
+```
+
+**方法比较总结**：
+
+| 方法 | 强收敛阶 | 弱收敛阶 | 函数评估次数 | 计算复杂度 | 适用场景 |
+|------|----------|----------|--------------|------------|----------|
+| 欧拉-丸山 | $O(h^{1/2})$ | $O(h)$ | 1 | 低 | 简单SDE，快速原型 |
+| 米尔斯坦 | $O(h)$ | $O(h)$ | 1 | 中等 | 精度要求高的SDE |
+| 随机RK4 | $O(h^{1/2})$ | $O(h)$ | 2 | 中等 | 复杂SDE，平衡精度和效率 |
+
+**稳定性分析**：
+
+对于线性测试SDE $dx = \lambda x dt + \mu x dW$：
+
+1. **欧拉-丸山稳定性**：
+   $$x_{i+1} = (1 + \lambda h + \mu \Delta W_i) x_i$$
+   稳定性条件：$\lambda < 0$ 且 $|\mu| < \sqrt{-2\lambda}$
+
+2. **米尔斯坦稳定性**：
+   包含二阶修正项，稳定性更好，但计算更复杂。
+
+**实际应用建议**：
+
+1. **简单问题**：使用欧拉-丸山方法
+2. **精度要求高**：使用米尔斯坦方法
+3. **复杂系统**：使用随机RK4方法
+4. **实时应用**：考虑计算复杂度，选择合适的方法
 
 ### 2.2 扩散模型应用
 

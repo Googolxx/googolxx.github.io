@@ -453,7 +453,7 @@ $$
 ## 三. SMLD算法框架
 
 有了上面的铺垫，介绍SMLD(Score Matching with Langevin Dynamics)的算法框架就变得清晰了。
-SMLD的核心思想包含两个关键步骤：
+这里主要介绍SMLD的具体实现方法：NCSN（Noise Conditioned Score Network），核心思想包含两个关键点：
 
 1. **多尺度噪声扰动**：使用不同尺度的噪声 $\{\sigma_1, \sigma_2, ..., \sigma_L\}$ 对数据进行扰动，其中 $\sigma_1 > \sigma_2 > ... > \sigma_L$。较大尺度的噪声能够更好地填充高维数据稀疏区域，而较小尺度的噪声则能更好地逼近真实数据分布 $p_0(\mathbf{x})$。
 
@@ -481,7 +481,7 @@ $$
 \end{aligned}
 $$
 
-考虑到多个噪声尺度 $\{\sigma_1, \sigma_2, ..., \sigma_L\}$，也就是NCSN（noise conditioned score network）中，对应目标函数为：
+考虑到多个噪声尺度 $\{\sigma_1, \sigma_2, ..., \sigma_L\}$，也就是NCSN中，对应目标函数为：
 
 $$
 \begin{aligned}
